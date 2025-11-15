@@ -1,0 +1,36 @@
+# === Core ===
+fastapi
+uvicorn[standard]
+python-dotenv
+pydantic>=2.0
+numpy
+pandas
+scikit-learn
+tqdm
+pyyaml
+requests
+
+# === Graph DB (Neo4j) ===
+neo4j>=5.0.0
+
+# === Vector DB ===
+chromadb>=0.5.0
+faiss-cpu>=1.8.0
+
+# === LLM / Fine-tuning ===
+torch>=2.2.0
+transformers>=4.40.0
+accelerate>=0.28.0
+peft>=0.11.0
+datasets>=2.19.0
+sentence-transformers>=3.0.0
+
+# === Protein / Structure Tools ===
+biopython>=1.83
+prody>=2.4.0
+
+# (선택) 3D 시각화 / PDB 다루기 편하게
+py3Dmol>=2.4.0
+
+# === Web UI (Frontend) ===
+streamlit>=1.37.0

@@ -1,4 +1,12 @@
-venv/
-__pycache__/
+# Python
+__pycache__
 *.pyc
-.env
+
+# Virtual Environment Folders
+venv/
+.venv/
+.mypy_cache/
+
+# Pip & Package management
+*.egg-info/
+.DS_Store
