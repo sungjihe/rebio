@@ -1,7 +1,8 @@
 import os
 import requests
 import pandas as pd
-from .config import RAW_DATA
+from .config import RAW_DATA_ROOT
+
 
 PUBCHEM_API = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/"
 
@@ -27,6 +28,6 @@ def download_drugs(drug_list):
             rows.append(d)
 
     df = pd.DataFrame(rows)
-    out_path = os.path.join(RAW_DATA, "drugs.csv")
+    out_path = os.path.join(RAW_DATA_ROOT, "drugs.csv")
     df.to_csv(out_path, index=False)
     print(f"[OK] Saved drugs → {out_path}")

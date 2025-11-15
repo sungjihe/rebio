@@ -1,3 +1,4 @@
 name,smiles,pubchem_cid,drugbank_id
 Doxorubicin,,31703,DB_DOXORUBICIN
 Erlotinib,,176870,DB_ERLOTINIB
+Imatinib,,5291,DB_IMATINIB

@@ -1,8 +1,15 @@
 pmid,title,year,source
+41239844,TRPS1::PLAG1 Fusion in a Primary Cutaneous Myoepithelial Carcinoma: A Case Report and Literature Review.,2025,breast cancer
+41239841,Laser and radiofrequency for treating genitourinary syndrome of menopause in breast cancer survivors: A systematic review of randomized controlled trial.,2025,breast cancer
+41239724,Effect of early shoulder functional exercise timing on drainage duration and subcutaneous seroma formation in overweight women undergoing modified radical mastectomy for breast cancer.,2025,breast cancer
+41239718,Causal relationship between subhealth status and pan-cancer risk: A Mendelian randomization study.,2025,breast cancer
+41239655,Efficacy and safety of trastuzumab deruxtecan for metastatic HER2+ and HER2-low breast cancer: A systematic review and meta-analysis.,2025,breast cancer
+41239630,Causal association between autoimmune diseases and risk of breast cancer: A bidirectional Mendelian randomization study.,2025,breast cancer
 41239548,Automatic dual-modality breast tumor segmentation in PET/CT images using CT-guided transformer.,2025,breast cancer
 41239533,PREDICT breast v4.0: an update to the PREDICT breast prognostic model.,2025,breast cancer
 41239501,Diverging global incidence trends of early-onset cancers: comparisons with incidence trends of later-onset cancers and mortality trends of early-onset cancers.,2025,breast cancer
 41239478,Dynamic tumor-infiltrating lymphocytes predicts survival in HR+/HER2- early breast cancer: a pre-to-post neoadjuvant chemotherapy study.,2025,breast cancer
+41239397,Is conformal thyroidectomy feasible? A 5-10-year follow-up study of residual thyroid in 2512 cases after thyroidectomy.,2025,breast cancer
 41239387,Mammography attendance in China's national breast cancer screening program: a county-level analysis of the Fujian province.,2025,breast cancer
 41239237,"The difference in contralateral breast cancer and ovarian cancer risks for BRCA1 founder variant (c.5266dup, c.4035del) carriers with primary breast cancer.",2025,breast cancer
 41239082,Investigating Real-World Evidence and Reported Survival Outcomes of CDK4/6 Inhibitors in HR+/HER2- Advanced Breast Cancer.,2025,breast cancer
@@ -12,13 +19,9 @@ pmid,title,year,source
 41238982,Germline BRCA1/2 Mutation Prevalence in Unselected ER-Low/HER2-Negative Breast Cancer.,2025,breast cancer
 41238950,Impact of sarcopenia on paclitaxel-induced peripheral neuropathy in early-stage breast cancer: a prospective observational study (the neuro-sarc study).,2025,breast cancer
 41238847,Breast Reconstruction Through the Decades: a Review of Innovations and Surgical Trends.,2025,breast cancer
-41238801,Contralateral breast cancer after radiotherapy and hormone therapy in two cohorts of US breast cancer survivors.,2025,breast cancer
-41238736,Evaluation of progesterone receptors with different cutoff values according to menopausal status in hormone-positive early breast cancer.,2025,breast cancer
-41238690,The dual impact of oxidative stress on breast cancer.,2025,breast cancer
-41238648,Integrating machine learning and experimental validation identifies a post-translational modification gene signature for prognosis and treatment response in breast cancer.,2025,breast cancer
-41238599,γδ T cells and resistance to CDK4/6 inhibitors in breast cancer.,2025,breast cancer
-41238571,Comparative analysis of solvent and advanced extraction techniques for optimizing phytochemical yield and bioactivity of Matthiola ovatifolia (Boiss.) Aerial parts.,2025,breast cancer
-41238527,Integrating multiparametric MRI radiomics and clinical models to assess sensitivity to neoadjuvant chemotherapy in breast cancer: A multicenter study.,2025,breast cancer
+41239736,"The role of chronic obstructive pulmonary disease mediated by immune cells on lung adenocarcinoma: A two-step, two-sample Mendelian randomization study.",2025,lung adenocarcinoma
+41239725,Pneumonic-type lung carcinoma with respiratory failure as the first manifestation: A case report and literature review.,2025,lung adenocarcinoma
+41239716,Identification and validation of a diagnostic and prognostic model based on immune escape and cancer-associated fibroblast-related genes in lung adenocarcinoma.,2025,lung adenocarcinoma
 41239532,Impact of post-ablation pulmonary vein adhesions on robot-assisted thoracoscopic surgery lobectomy: a case report.,2025,lung adenocarcinoma
 41239464,Integrating genetic crosstalk between atherosclerosis and lung adenocarcinoma to advance precision diagnosis and treatment.,2025,lung adenocarcinoma
 41239154,Feasibility of Early Dynamic <sup>18</sup>F-FDG PET/CT Imaging for Predicting EGFR and TP53 Mutations in Lung Adenocarcinoma.,2025,lung adenocarcinoma
@@ -36,6 +39,63 @@ pmid,title,year,source
 41234855,LINC01314 suppresses proliferation and invasion via epithelial-to-mesenchymal transition regulation in lung adenocarcinoma.,2025,lung adenocarcinoma
 41234824,Integrated multi-omic analysis unravels the characteristics of the metabolism-related intratumoral microbes and establishes a novel signature for predicting prognosis and therapeutic response in lung adenocarcinoma.,2025,lung adenocarcinoma
 41234731,Development and validation of machine learning models for predicting STAS in stage I lung adenocarcinoma with part-solid and solid nodules: a two-center study.,2025,lung adenocarcinoma
-41234597,Incremental prognostic value of solid component volume ratio and entropy for pathological stage IA invasive lung adenocarcinoma after surgery.,2025,lung adenocarcinoma
-41234588,"Pathological complete response in <i>RET</i>-positive non-small cell lung cancer: a case report of pralsetinib-based ""sandwich"" therapy.",2025,lung adenocarcinoma
-41234585,The role of TRPA1 in lung cancer.,2025,lung adenocarcinoma
+41239574,PD-1/PD-L1 Checkpoint Dysfunction in Vitiligo: Novel Pathogenic Insights and Therapeutic Innovation.,2025,melanoma
+41239501,Diverging global incidence trends of early-onset cancers: comparisons with incidence trends of later-onset cancers and mortality trends of early-onset cancers.,2025,melanoma
+41239499,An immunometabolic prodrug strategy overcomes DHODH inhibitor resistance in refractory melanoma.,2025,melanoma
+41239432,Baricitinib could improve the prognosis of anti-MDA5 antibody positive dermatomyositis associated interstitial lung disease.,2025,melanoma
+41238964,Exploration of the roles of CAFs in melanoma based on single-cell transcriptomics and spatial transcriptomics.,2025,melanoma
+41238915,Microbial signals in primary and metastatic brain tumors.,2025,melanoma
+41238849,Butyrate promotes T cell 'stemness' to support immunity to melanoma.,2025,melanoma
+41238574,Regulation of lipoprotein processing by GPNMB in foamy macrophages: potential therapeutic targets for atherosclerosis.,2025,melanoma
+41238504,Therapy-Induced Metastatic Melanoma During Treatment With Encorafenib and Cetuximab for BRAF-Mutated Colorectal Cancer: A Case Report and Short Literature Review.,2025,melanoma
+41238472,The promise of TIL therapy for glioblastoma.,2025,melanoma
+41238218,TAMs-mediated resistance to oncolytic virus M1 in solid tumors.,2025,melanoma
+41238189,Phosphatidylserine blockade by dipicolylamine-zinc enhances chemoimmunotherapy of B16F10 melanoma.,2025,melanoma
+41237926,"Disparities in melanoma survival in Asian American and Pacific Islander patients: A Surveillance, Epidemiology, and End Results (SEER) program-based analysis.",2025,melanoma
+41237925,Utility of 31-gene expression profile for American Joint Commission on Cancer pT1a melanomas.,2025,melanoma
+41237414,BAP1-Inactivated Melanocytic Tumors With Distinctive p16-Negative Clonal Growth and Liver Metastases.,2025,melanoma
+41237350,Harvesting Risk: An Ecologic Study of Agricultural Practices and Patterns and Melanoma Incidence in Pennsylvania.,2025,melanoma
+41237160,In vivo investigation of STN1 downregulation in melanoma formation in adult mice following UV irradiation.,2025,melanoma
+41237077,Phytochemical Characterization and Anticancer Potential of Avocado Seed Oil.,2025,melanoma
+41237013,"Chromatography-guided purification and characterization of <i>p-</i>hydroxyphenethyl anisate as a potent anti-melanogenesis component from the concentrated Chinese medicine, Qiang Huo.",2025,melanoma
+41236788,The Effects of a Modified Mediterranean Diet on Gut Microbiota and Chemotherapy Side Effects in Patients With Metastatic Colorectal Cancer Undergoing First-Line Chemotherapy With or Without Either Antiepidermal Growth Factor Receptor or Antivascular Endothelial Growth Factor Agent: Protocol for a Randomized Pilot Study in Italy.,2025,melanoma
+41239792,An Overview of Colon Specific Drug Delivery: Approaches and Evaluation Aspects.,2025,colorectal cancer
+41239745,Concerns on the statistical methodology and incomplete reporting of patient information in the long-term outcomes of biologic therapy for prepouch ileitis.,2025,colorectal cancer
+41239718,Causal relationship between subhealth status and pan-cancer risk: A Mendelian randomization study.,2025,colorectal cancer
+41239704,LC3 overexpression in colorectal cancer - strong correlation with M1 tumor-associated macrophages: An observational study.,2025,colorectal cancer
+41239679,"A clinical prediction model for metachronous distant metastasis in stage II-III pMMR/MSS colorectal cancer: A single-center, retrospective study.",2025,colorectal cancer
+41239648,A case report of insulin autoimmune syndrome induced by drugs for colorectal cancer.,2025,colorectal cancer
+41239643,Perineural invasion as both a prognostic factor for stage II rectal cancer and an indicator for adjuvant chemotherapy.,2025,colorectal cancer
+41239615,"Expression and clinicopathological significance of KAI1, MACC1, and AGR2 in cervical squamous cell carcinoma.",2025,colorectal cancer
+41239614,Causality relationship between 91 inflammatory factors and 5 intestinal diseases: A two-sample bidirectional Mendelian randomized study.,2025,colorectal cancer
+41239610,Causal relationship between plasma homocysteine levels and colorectal cancer: A Mendelian randomization study.,2025,colorectal cancer
+41239588,Progressive myalgia as the sole manifestation of cancer-associated myositis: A case report and review of the literature.,2025,colorectal cancer
+41239576,ZnO nanoparticles enhance the cytotoxic effects of a chalcone-sulfonamide hybrid by impairing the autophagic flux and upregulating HIF-1α expression.,2025,colorectal cancer
+41239501,Diverging global incidence trends of early-onset cancers: comparisons with incidence trends of later-onset cancers and mortality trends of early-onset cancers.,2025,colorectal cancer
+41239499,An immunometabolic prodrug strategy overcomes DHODH inhibitor resistance in refractory melanoma.,2025,colorectal cancer
+41239456,Pan-cancer analysis identifies LMBR1L as a prognostic and immunological biomarker with validation in colorectal cancer.,2025,colorectal cancer
+41239427,The VCPKMT-VCP-HDAC1 axis inhibits colorectal cancer by conferring sensitivity to ferroptosis.,2025,colorectal cancer
+41239322,"Facilitator and barrier perspectives on learning and implementing high-resolution anoscopy in Abuja, Nigeria: a qualitative study.",2025,colorectal cancer
+41239247,Global burden of colorectal cancer in 2022 and projections to 2050: incidence and mortality estimates from GLOBOCAN.,2025,colorectal cancer
+41239188,Detection of circulating tumor DNA in colorectal cancer patients using a methylation-specific droplet digital PCR multiplex.,2025,colorectal cancer
+41238984,Prognostic Value of Circulating Tumor DNA for Recurrence and Survival in Patients Undergoing Local Treatment for Initially Unresectable RAS/RAF Mutated Colorectal Cancer Liver Metastases.,2025,colorectal cancer
+41239466,Olutasidenib for mutated IDH1 acute myeloid leukemia: final five-year results from the phase 2 pivotal cohort.,2025,acute myeloid leukemia
+41239429,Early mortality in patients with acute promyelocytic leukemia: a systematic review and meta-analysis.,2025,acute myeloid leukemia
+41238480,What is the Prognostic Relevance of Responses Less Than a CR to Initial AML Treatment?,2025,acute myeloid leukemia
+41238479,Prevalence and Prognostic Impact of NPM1 Mutation in Childhood Acute Myeloid Leukemia: Experience from a Single Tertiary Cancer Centre in India.,2025,acute myeloid leukemia
+41238325,Updates on current and future research in acute myeloid leukemia.,2025,acute myeloid leukemia
+41237688,"Temporal trends in AML incidence and mortality, with a focus on AML-related deaths among patients with myelodysplastic syndromes in the United States, 1999-2023.",2025,acute myeloid leukemia
+41237364,Glutaredoxin 2 is essential for AML survival through mitochondrial permeability transition pore regulation.,2025,acute myeloid leukemia
+41236709,Association of EASIX Score with Non-relapse Mortality and Overall Survival in Pediatric Acute Leukemia Patients Undergoing Allogeneic Hematopoietic Stem Cell Transplantation.,2025,acute myeloid leukemia
+41236689,Acute Myeloid Leukemia Patients with High-Risk Karyotypes Benefit from Decitabine in Combination with Modified CAG.,2025,acute myeloid leukemia
+41236654,The crucial role of circadian synchronization in bone marrow adipose tissue mesenchymal stem cells: insights into pathogenesis in Fanconi anemia and acute myeloid leukemia.,2025,acute myeloid leukemia
+41236280,Cutaneous and Orbital Myeloid Sarcoma as the Initial Clinical Presentation of Acute Myeloid Leukemia in an Infant.,2025,acute myeloid leukemia
+41235763,"Venetoclax plus decitabine, cytarabine, aclarubicin, and G-CSF in adults with newly diagnosed acute myeloid leukemia: A multicenter, retrospective study.",2025,acute myeloid leukemia
+41235128,Masking as Myelofibrosis: A Case of Tp53 Mutated Acute Erythroid Leukemia Presenting With Pancytopenia and Bone Pain.,2025,acute myeloid leukemia
+41235000,Dual Challenge: Managing Complicated Diphtheria in a Child With Acute Myeloid Leukemia.,2025,acute myeloid leukemia
+41234969,Vaginal Myeloid Sarcoma: A Rare Extramedullary Presentation of a Myeloid Neoplasm.,2025,acute myeloid leukemia
+41234859,A novel manganese metabolism- and immune-related prognostic risk model for acute myeloid leukemia.,2025,acute myeloid leukemia
+41234771,Mutant NPM1 modulates PDCD4 ubiquitination degradation and facilitates leukemogenesis.,2025,acute myeloid leukemia
+41234658,Pleural Infiltration Revealing Post-Essential Thrombocythemia Acute Myeloid Leukaemia.,2025,acute myeloid leukemia
+41234501,SRSF7 serves as a potential therapeutic target in acute myeloid leukemia.,2026,acute myeloid leukemia
+41234112,[Latest Research Progress of E3 Ubiquitin Ligase in the Diagnosis and Treatment of Acute Myeloid Leukemia --Review].,2025,acute myeloid leukemia

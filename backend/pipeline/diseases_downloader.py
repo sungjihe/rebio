@@ -1,7 +1,8 @@
 import os
 import pandas as pd
 import requests
-from .config import RAW_DATA
+from .config import RAW_DATA_ROOT
+
 
 MONDO_SEARCH_API = "https://www.ebi.ac.uk/ols4/api/search?q="
 
@@ -28,6 +29,6 @@ def download_diseases(name_list):
             rows.append(d)
 
     df = pd.DataFrame(rows)
-    out_path = os.path.join(RAW_DATA, "diseases.csv")
+    out_path = os.path.join(RAW_DATA_ROOT, "diseases.csv")
     df.to_csv(out_path, index=False)
     print(f"[OK] Saved diseases → {out_path}")

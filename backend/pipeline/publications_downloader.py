@@ -1,7 +1,8 @@
 import os
 import pandas as pd
 from Bio import Entrez
-from .config import RAW_DATA
+from .config import RAW_DATA_ROOT
+
 
 Entrez.email = "your@email.com"
 
@@ -28,6 +29,6 @@ def download_publications(keywords):
         all_rows.extend(fetch_pubmed(kw))
 
     df = pd.DataFrame(all_rows)
-    out_path = os.path.join(RAW_DATA, "publications.csv")
+    out_path = os.path.join(RAW_DATA_ROOT, "publications.csv")
     df.to_csv(out_path, index=False)
     print(f"[OK] Saved publications → {out_path}")

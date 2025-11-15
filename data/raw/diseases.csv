@@ -1,3 +1,6 @@
 disease_id,name
 MONDO:0007254,breast cancer
 NCIT:C3512,Lung Adenocarcinoma
+NCIT:C3224,Melanoma
+MONDO:0005575,colorectal cancer
+NCIT:C3171,Acute Myeloid Leukemia

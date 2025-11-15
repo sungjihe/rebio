@@ -1,44 +1,81 @@
-import os
+# backend/pipeline/protein_downloader.py
+import csv
+import logging
+from typing import Iterable, List
+
 import requests
-import pandas as pd
-from typing import List
-from .config import RAW_DATA
 
-UNIPROT_API = "https://rest.uniprot.org/uniprotkb/"
+from .config import RAW_DATA_ROOT
 
-def fetch_protein(uniprot_id: str):
-    url = UNIPROT_API + uniprot_id + ".json"
-    r = requests.get(url)
-    if r.status_code != 200:
-        return None
-    js = r.json()
+logger = logging.getLogger("protein_downloader")
+logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
 
-    sequence = js.get("sequence", {}).get("value", "")
-    gene = js.get("genes", [{}])[0].get("geneName", {}).get("value", "")
-    name = js.get("proteinDescription", {}).get("recommendedName", {}).get("fullName", {}).get("value", "")
+UNIPROT_BASE = "https://rest.uniprot.org/uniprotkb/search"
 
-    pdb_ids = []
-    for db in js.get("dbReferences", []):
-        if db.get("type") == "PDB":
-            pdb_ids.append(db.get("id"))
+OUT_PATH = RAW_DATA_ROOT / "proteins.csv"
 
-    return {
-        "uniprot_id": uniprot_id,
-        "name": name,
-        "gene": gene,
-        "sequence": sequence,
-        "pdb_ids": ";".join(pdb_ids),
-        "embedding_id": uniprot_id + "_vec"
+
+def fetch_one(query: str):
+    """
+    UniProt REST API (TSV) 에서 1개 결과만 가져오기.
+    query 에는 gene symbol (TP53) 이나 UniProt ID (P04637) 둘 다 넣어도 됨.
+    """
+    params = {
+        # reviewed:true → Swiss-Prot (검증된 시퀀스) 우선 사용
+        "query": f"({query}) AND reviewed:true",
+        "format": "tsv",
+        "fields": "accession,protein_name,gene_primary,sequence",
+        "size": 1,
     }
 
-def download_proteins(uniprot_ids: List[str]):
-    rows = []
-    for uid in uniprot_ids:
-        d = fetch_protein(uid)
-        if d:
-            rows.append(d)
+    r = requests.get(UNIPROT_BASE, params=params, timeout=30)
+    r.raise_for_status()
 
-    df = pd.DataFrame(rows)
-    out_path = os.path.join(RAW_DATA, "proteins.csv")
-    df.to_csv(out_path, index=False)
-    print(f"[OK] Saved proteins → {out_path}")
+    lines = r.text.splitlines()
+    if len(lines) < 2:
+        logger.warning(f"[UNIPROT] No hit for '{query}'")
+        return None
+
+    # 첫 줄은 header, 두 번째 줄이 첫 결과
+    parts = lines[1].split("\t")
+    if len(parts) < 4:
+        logger.warning(f"[UNIPROT] Unexpected TSV format for '{query}'")
+        return None
+
+    accession, name, gene, seq = parts[:4]
+    return {
+        "uniprot_id": accession,
+        "name": name,
+        "gene": gene or query,
+        "sequence": seq,
+    }
+
+
+def download_proteins(queries: Iterable[str]) -> None:
+    RAW_DATA_ROOT.mkdir(parents=True, exist_ok=True)
+
+    rows: List[dict] = []
+    for q in queries:
+        logger.info(f"[UNIPROT] Fetching protein for '{q}'")
+        try:
+            rec = fetch_one(q)
+        except Exception as e:
+            logger.warning(f"[UNIPROT] Error for '{q}': {e}")
+            continue
+
+        if rec:
+            rows.append(rec)
+
+    if not rows:
+        logger.warning("[UNIPROT] No proteins fetched.")
+        return
+
+    with OUT_PATH.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=["uniprot_id", "name", "gene", "sequence"],
+        )
+        writer.writeheader()
+        writer.writerows(rows)
+
+    logger.info(f"[OK] Saved proteins → {OUT_PATH}")
