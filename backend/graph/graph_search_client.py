@@ -59,16 +59,14 @@ class GraphSearchClient:
         query = """
         MATCH (p:Protein {uniprot_id: $uniprot_id})
 
-        // direct association
         OPTIONAL MATCH (p)-[d1:ASSOCIATED_WITH]->(d:Disease)
 
-        // similarity propagation
         OPTIONAL MATCH (p)-[s:SIMILAR_TO]->(p2:Protein)-[d2:ASSOCIATED_WITH]->(d)
 
         WITH
             d,
             max(coalesce(d1.score, 0.0)) AS direct_score,
-            max(coalesce(s.score, 0.0) * coalesce(d2.score, 1.0)) AS propagated_score,
+            max(coalesce(s.sim_score, 0.0) * coalesce(d2.score, 1.0)) AS propagated_score,
             collect(DISTINCT p2.uniprot_id) AS support_proteins
 
         WHERE d IS NOT NULL
@@ -108,21 +106,18 @@ class GraphSearchClient:
         query = """
         MATCH (p:Protein {uniprot_id: $uniprot_id})
 
-        // direct target
         OPTIONAL MATCH (dr:Drug)-[t1:TARGETS]->(p)
 
-        // similarity propagation
-        OPTIONAL MATCH (p)-[s:SIMILAR_TO]->(p2:Protein)
-        OPTIONAL MATCH (dr)-[t2:TARGETS]->(p2)
+        OPTIONAL MATCH (p)-[s:SIMILAR_TO]->(sp:Protein)
+        OPTIONAL MATCH (dr)-[t2:TARGETS]->(sp)
 
-        // drug indications
         OPTIONAL MATCH (dr)-[:USED_FOR]->(d:Disease)
 
         WITH
             dr,
-            max(coalesce(t1.score, 0.0)) AS direct_target_score,
-            max(coalesce(s.score, 0.0) * coalesce(t2.score, 1.0)) AS propagated_target_score,
-            collect(DISTINCT p2.uniprot_id) AS support_proteins,
+            max(coalesce(t1.evidence_score, 0.0)) AS direct_target_score,
+            max(coalesce(s.sim_score, 0.0) * coalesce(t2.evidence_score, 1.0)) AS propagated_target_score,
+            collect(DISTINCT sp.uniprot_id) AS support_proteins,
             collect(DISTINCT d.name) AS indications
 
         WHERE dr IS NOT NULL
@@ -150,20 +145,26 @@ class GraphSearchClient:
 
         return self._run(
             query,
-            {"uniprot_id": uniprot_id, "top_k": top_k}
+            {"uniprot_id": uniprot_id, "top_k": top_k},
         )
 
     # =====================================================
     # 3) 유사 단백질 검색
     # =====================================================
     def similar_proteins(self, uniprot_id: str, top_k: int = 20):
+
         query = """
         MATCH (:Protein {uniprot_id: $uniprot_id})-[s:SIMILAR_TO]->(p2:Protein)
         RETURN
             p2.uniprot_id AS protein_id,
             p2.name AS protein_name,
-            s.score AS similarity
+            s.sim_score AS similarity,
+            s.method AS method
         ORDER BY similarity DESC
         LIMIT $top_k
         """
-        return self._run(query, {"uniprot_id": uniprot_id, "top_k": top_k})
+
+        return self._run(
+            query,
+            {"uniprot_id": uniprot_id, "top_k": top_k},
+        )
