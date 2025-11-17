@@ -279,3 +279,4 @@ class GraphSearchClient:
         LIMIT $top_k
         """
         return self._run(query, {"uniprot_id": uniprot_id, "top_k": top_k})
+
