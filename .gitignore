@@ -1,7 +1,39 @@
-__pycache__
+# Python
+__pycache__/
 *.pyc
+*.pyo
+*.pyd
+*.pkl
+
+# Virtual env
 venv/
-.venv/
-.mypy_cache/
-*.egg-info/
+.env
+
+# Data
+data/raw/*
+data/processed/*
+data/pdb/*
+data/vectordb/*
+data/chroma/*
+storage_rag/*
+chroma_db_rag/*
+
+# Models
+models/*
+
+# Logs
+*.log
+
+# Streamlit cache
+.streamlit/
+
+# FastAPI
+*.db
+
+# DS/AI
+*.ckpt
+*.pth
+*.pt
+
+# Others
 .DS_Store
