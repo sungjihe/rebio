@@ -1,70 +1,77 @@
 # backend/graph/graph_search_client.py
 
-import os
+"""
+GraphSearchClient
+- Single unified Neo4j access layer for Helicon AI
+- Provides:
+    • Evidence Path Search
+    • Disease Prediction
+    • Drug Recommendation
+    • Similar Protein Search
+
+This version is fully integrated with backend/config.py
+and safe for LangGraph async/parallel execution.
+"""
+
 from typing import List, Dict, Optional, Any
-
-from dotenv import load_dotenv
 from neo4j import GraphDatabase, Driver
-from neo4j.graph import Path as Neo4jPath, Node as Neo4jNode, Relationship as Neo4jRel
+from neo4j.graph import Path as Neo4jPath
+from pathlib import Path
 
-# .env 로드
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ENV_PATH = os.path.join(os.path.dirname(BASE_DIR), ".env")
-load_dotenv(ENV_PATH)
+from backend.config import Config
 
 
 class GraphSearchClient:
-    """
-    Neo4j Cypher Wrapper:
-    - 단백질 기반 질병 예측
-    - 약물 추천
-    - 유사 단백질 검색
-    - Evidence Path 추출 (Protein-Disease / Protein-Drug)
-    """
+    """Unified Neo4j Client for Helicon Graph reasoning."""
 
     def __init__(
         self,
-        uri: Optional[str] = None,
-        user: Optional[str] = None,
-        password: Optional[str] = None,
+        uri: str = Config.NEO4J_URI,
+        user: str = Config.NEO4J_USER,
+        password: str = Config.NEO4J_PASSWORD,
     ):
-        self.uri = uri or os.getenv("NEO4J_URI")
-        self.user = user or os.getenv("NEO4J_USER")
-        self.password = password or os.getenv("NEO4J_PASSWORD")
+        if not (uri and user and password):
+            raise ValueError("❌ Neo4j 설정이 올바르지 않습니다 (.env 확인).")
 
-        if not (self.uri and self.user and self.password):
-            raise ValueError("Neo4j 환경변수(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)가 설정되어야 합니다.")
+        self.uri = uri
+        self.user = user
+        self.password = password
 
         self.driver: Driver = GraphDatabase.driver(
             self.uri,
             auth=(self.user, self.password),
         )
 
+    # -----------------------------------------------------------
+    # 안전하게 종료
+    # -----------------------------------------------------------
     def close(self):
         if self.driver:
             self.driver.close()
 
-    # =====================================================
-    # 내부 헬퍼: 일반 쿼리 실행
-    # =====================================================
+    # -----------------------------------------------------------
+    # 안전한 쿼리 실행 헬퍼
+    # -----------------------------------------------------------
     def _run(self, query: str, params: Optional[Dict[str, Any]] = None):
+        """Run Cypher safely and return clean dict rows."""
         with self.driver.session() as session:
             result = session.run(query, params or {})
             return [record.data() for record in result]
 
-    # =====================================================
-    # 내부 헬퍼: Neo4j Path → dict 변환
-    # (EvidencePathNode와 완전히 동기화된 형태)
-    # =====================================================
+    # -----------------------------------------------------------
+    # Neo4j Path → dict (EvidencePathNode와 동일 구조)
+    # -----------------------------------------------------------
     def _path_to_dict(self, path: Neo4jPath) -> Dict[str, Any]:
-        def node_to_dict(n: Neo4jNode) -> Dict[str, Any]:
+        """Convert Neo4j path into Helicon Graph format."""
+
+        def node(n):
             return {
                 "id": n.id,
                 "labels": list(n.labels),
                 "properties": dict(n),
             }
 
-        def rel_to_dict(r: Neo4jRel) -> Dict[str, Any]:
+        def rel(r):
             return {
                 "id": r.id,
                 "type": r.type,
@@ -74,37 +81,38 @@ class GraphSearchClient:
             }
 
         return {
-            "nodes": [node_to_dict(n) for n in path.nodes],
-            "relationships": [rel_to_dict(r) for r in path.relationships],
+            "nodes": [node(n) for n in path.nodes],
+            "relationships": [rel(r) for r in path.relationships],
         }
 
-    # =====================================================
-    # 0) Evidence Path: Protein - Disease
-    # =====================================================
-    def evidence_paths_protein_disease(
+    # -----------------------------------------------------------
+    # 단일 통합 Evidence Path Search
+    # -----------------------------------------------------------
+    def evidence_paths(
         self,
-        uniprot_id: str,
-        disease_id: str,
+        start_label: str,
+        start_key: str,
+        start_value: str,
+        end_label: str,
+        end_key: str,
+        end_value: str,
         max_paths: int = 5,
         max_hops: int = 4,
     ) -> List[Dict[str, Any]]:
         """
-        Protein(uniprot_id) ↔ Disease(disease_id) 사이의 근거 경로 리스트
-        - var-length path [*1..max_hops]
+        Unified evidence path search:
+        MATCH (start)-[*1..N]-(end)
         """
-        max_paths = int(max_paths)
-        max_hops = int(max_hops)
-
         query = f"""
-        MATCH (prot:Protein)
-        USING INDEX prot:Protein(uniprot_id)
-        WHERE prot.uniprot_id = $uniprot_id
+        MATCH (s:{start_label})
+        USING INDEX s:{start_label}({start_key})
+        WHERE s.{start_key} = $start_value
 
-        MATCH (dis:Disease)
-        USING INDEX dis:Disease(disease_id)
-        WHERE dis.disease_id = $disease_id
+        MATCH (e:{end_label})
+        USING INDEX e:{end_label}({end_key})
+        WHERE e.{end_key} = $end_value
 
-        MATCH p = (prot)-[*1..{max_hops}]-(dis)
+        MATCH p = (s)-[*1..{max_hops}]-(e)
         RETURN p
         LIMIT {max_paths}
         """
@@ -113,61 +121,32 @@ class GraphSearchClient:
             result = session.run(
                 query,
                 {
-                    "uniprot_id": uniprot_id,
-                    "disease_id": disease_id,
+                    "start_value": start_value,
+                    "end_value": end_value,
                 },
             )
-            return [self._path_to_dict(record["p"]) for record in result]
+            return [self._path_to_dict(r["p"]) for r in result]
 
-    # =====================================================
-    # 0) Evidence Path: Protein - Drug
-    # =====================================================
-    def evidence_paths_protein_drug(
-        self,
-        uniprot_id: str,
-        drugbank_id: str,
-        max_paths: int = 5,
-        max_hops: int = 4,
-    ) -> List[Dict[str, Any]]:
-        """
-        Protein(uniprot_id) ↔ Drug(drugbank_id) 사이의 근거 경로 리스트
-        """
-        max_paths = int(max_paths)
-        max_hops = int(max_hops)
+    # convenience wrappers (Helicon nodes use these)
+    def evidence_paths_protein_disease(self, uniprot_id, disease_id, **kwargs):
+        return self.evidence_paths(
+            "Protein", "uniprot_id", uniprot_id,
+            "Disease", "disease_id", disease_id,
+            **kwargs,
+        )
 
-        query = f"""
-        MATCH (prot:Protein)
-        USING INDEX prot:Protein(uniprot_id)
-        WHERE prot.uniprot_id = $uniprot_id
+    def evidence_paths_protein_drug(self, uniprot_id, drugbank_id, **kwargs):
+        return self.evidence_paths(
+            "Protein", "uniprot_id", uniprot_id,
+            "Drug", "drugbank_id", drugbank_id,
+            **kwargs,
+        )
 
-        MATCH (dr:Drug)
-        USING INDEX dr:Drug(drugbank_id)
-        WHERE dr.drugbank_id = $drugbank_id
-
-        MATCH p = (prot)-[*1..{max_hops}]-(dr)
-        RETURN p
-        LIMIT {max_paths}
-        """
-
-        with self.driver.session() as session:
-            result = session.run(
-                query,
-                {
-                    "uniprot_id": uniprot_id,
-                    "drugbank_id": drugbank_id,
-                },
-            )
-            return [self._path_to_dict(record["p"]) for record in result]
-
-    # =====================================================
-    # 1) 단백질 기반 질병 예측 (인덱스 최적화)
-    # =====================================================
+    # -----------------------------------------------------------
+    # Disease Prediction
+    # -----------------------------------------------------------
     def predict_diseases(self, uniprot_id: str, top_k: int = 20):
-        """
-        Protein → Disease ranking
-        direct_score: (p)-[:ASSOCIATED_WITH]->(d)
-        propagated_score: (p)-[:SIMILAR_TO]->(p2)-[:ASSOCIATED_WITH]->(d)
-        """
+        """Protein → Disease ranking."""
         query = """
         MATCH (p:Protein)
         USING INDEX p:Protein(uniprot_id)
@@ -204,15 +183,11 @@ class GraphSearchClient:
         """
         return self._run(query, {"uniprot_id": uniprot_id, "top_k": top_k})
 
-    # =====================================================
-    # 2) 약물 추천 (인덱스 최적화)
-    # =====================================================
+    # -----------------------------------------------------------
+    # Drug Recommendation
+    # -----------------------------------------------------------
     def recommend_drugs(self, uniprot_id: str, top_k: int = 20):
-        """
-        Protein → Drug ranking
-        direct_target_score: (dr)-[:TARGETS]->(p)
-        propagated_target_score: p ~ sp (SIMILAR_TO) + (dr)-[:TARGETS]->(sp)
-        """
+        """Protein → Drug ranking."""
         query = """
         MATCH (p:Protein)
         USING INDEX p:Protein(uniprot_id)
@@ -256,13 +231,11 @@ class GraphSearchClient:
         """
         return self._run(query, {"uniprot_id": uniprot_id, "top_k": top_k})
 
-    # =====================================================
-    # 3) 유사 단백질 검색 (인덱스 최적화)
-    # =====================================================
+    # -----------------------------------------------------------
+    # Similar Proteins
+    # -----------------------------------------------------------
     def similar_proteins(self, uniprot_id: str, top_k: int = 20):
-        """
-        Protein → similar Proteins
-        """
+        """Protein → Similar Proteins."""
         query = """
         MATCH (p:Protein)
         USING INDEX p:Protein(uniprot_id)

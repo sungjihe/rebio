@@ -1,20 +1,30 @@
 # backend/crawlers/disease_wiki_crawler.py
-import requests
-from bs4 import BeautifulSoup
 
+from bs4 import BeautifulSoup
+from backend.crawlers.common import safe_get
 
 def fetch_wiki_summary(disease_name: str):
-    """Wikipedia 질병 요약"""
     url = f"https://en.wikipedia.org/wiki/{disease_name.replace(' ', '_')}"
-    res = requests.get(url, timeout=10)
+    res = safe_get(url)
 
-    if res.status_code != 200:
-        return None
+    if not res:
+        return {
+            "ok": False,
+            "source": "wikipedia",
+            "data": None,
+            "error": "request_failed"
+        }
 
     soup = BeautifulSoup(res.text, "html.parser")
-
     paragraphs = soup.select("p")
+
     text = " ".join(p.text.strip() for p in paragraphs[:3])
 
-    return text if text else None
+    return {
+        "ok": True,
+        "source": "wikipedia",
+        "data": text or None,
+        "error": None,
+    }
+
 

@@ -1,0 +1,135 @@
+import os
+import json
+import requests
+from pathlib import Path
+from dotenv import load_dotenv
+import streamlit as st
+from PIL import Image
+from io import BytesIO
+
+from utils_3d import render_3d_structure, render_mutation_overlay
+
+
+# -----------------------------------------------------------------
+# 환경 변수
+# -----------------------------------------------------------------
+load_dotenv()
+FASTAPI_URL = os.getenv("FASTAPI_URL", "http://localhost:8000")
+
+
+# -----------------------------------------------------------------
+# Streamlit Settings
+# -----------------------------------------------------------------
+st.set_page_config(
+    page_title="ReBio Protein Analyzer",
+    page_icon="🧬",
+    layout="wide"
+)
+
+st.title("🧬 ReBio: Protein Sequence Analyzer")
+st.caption("Protein Sequence → Structure Prediction → Redesign → Scientific Reasoning")
+
+
+# -----------------------------------------------------------------
+# User Input
+# -----------------------------------------------------------------
+sequence = st.text_area(
+    "Enter Protein Sequence (Amino Acids)",
+    placeholder="MVLSPADKTNVKAAWGKVGAHAGEY...",
+    height=150
+)
+
+if st.button("🚀 Run Analysis"):
+    if not sequence or len(sequence.strip()) < 20:
+        st.error("❌ Please enter a valid protein sequence (≥ 20 aa).")
+        st.stop()
+
+    st.info("⏳ Running ReBio Multi-Agent Pipeline...")
+
+    payload = {"sequence": sequence.strip()}
+
+    try:
+        res = requests.post(f"{FASTAPI_URL}/rebio/run", json=payload)
+    except Exception as e:
+        st.error(f"❌ Failed to connect to FastAPI backend: {e}")
+        st.stop()
+
+    if res.status_code != 200:
+        st.error(f"❌ API Error {res.status_code}: {res.text}")
+        st.stop()
+
+    data = res.json()
+    st.success("🎉 Analysis Completed!")
+
+    # -----------------------------------------------------------------
+    # Structure
+    # -----------------------------------------------------------------
+    st.markdown("## 🧬 Predicted Structure")
+
+    pdb_text = data.get("pdb_text")
+    if pdb_text:
+        render_3d_structure(pdb_text, title="Predicted Structure (ESMFold)")
+    else:
+        st.warning("⚠ No PDB structure returned.")
+
+    # -----------------------------------------------------------------
+    # Redesign Results
+    # -----------------------------------------------------------------
+    st.markdown("---")
+    st.markdown("## 🔬 Protein Redesign (Variants)")
+
+    design = data.get("design_result")
+    if design and isinstance(design, dict):
+
+        original_seq = design.get("original_sequence", "")
+        variants = design.get("variants", [])
+
+        if variants:
+            st.write(f"**Generated Variants:** {len(variants)}")
+
+            # Variant selection
+            idx = st.selectbox(
+                "Select Variant",
+                list(range(len(variants))),
+                format_func=lambda i: variants[i].get("mutation_description", f"Variant #{i}")
+            )
+            variant = variants[idx]
+
+            mut_positions = variant.get("mutation_positions", [])
+
+            # 3D overlay
+            if pdb_text and mut_positions:
+                render_mutation_overlay(
+                    pdb_text=pdb_text,
+                    variant_positions=mut_positions,
+                    title=f"Variant #{idx} Overlay"
+                )
+
+            # Variant info
+            st.markdown("### 🧬 Variant Details")
+            st.json(variant)
+
+        else:
+            st.info("No variants generated.")
+
+    else:
+        st.info("No redesign data returned.")
+
+    # -----------------------------------------------------------------
+    # Scientific Markdown Report
+    # -----------------------------------------------------------------
+    st.markdown("---")
+    st.markdown("## 📘 Scientific Report")
+
+    report_md = data.get("summary_markdown") or data.get("report")
+
+    if report_md:
+        st.markdown(report_md)
+    else:
+        st.warning("Report not found.")
+
+    # -----------------------------------------------------------------
+    # Debug JSON
+    # -----------------------------------------------------------------
+    with st.expander("🔍 Raw Data (Debug)"):
+        st.json(data)

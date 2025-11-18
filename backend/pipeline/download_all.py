@@ -1,152 +1,98 @@
 # backend/pipeline/download_all.py
 
-import os
-import sys
-import time
-import logging
-from pathlib import Path
+"""
+ReBio Full Data Pipeline
 
-# =============================================================================
-# 1) 프로젝트 ROOT 등록 (import 에러 방지)
-# =============================================================================
-BASE_DIR = Path(__file__).resolve().parents[1]     # /backend
-ROOT_DIR = BASE_DIR.parent                         # /rebio
+사용 예시:
 
-if str(ROOT_DIR) not in sys.path:
-    sys.path.append(str(ROOT_DIR))
-if str(BASE_DIR) not in sys.path:
-    sys.path.append(str(BASE_DIR))
+# 전체 파이프라인 (권장)
+python -m backend.pipeline.download_all
 
-# =============================================================================
-# 2) 로깅 설정 (Production-level)
-# =============================================================================
-LOG_PATH = ROOT_DIR / "logs"
-LOG_PATH.mkdir(parents=True, exist_ok=True)
+# 특정 단계만 실행 (예: 단백질 + 그래프만)
+python -m backend.pipeline.download_all --step proteins
+python -m backend.pipeline.download_all --step graph
+"""
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(asctime)s] [%(levelname)s] %(message)s",
-    handlers=[
-        logging.FileHandler(LOG_PATH / "pipeline.log", encoding="utf-8"),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger("pipeline")
+import argparse
+import traceback
 
+from backend.config import Config
 
-# =============================================================================
-# 3) Import pipeline modules (각 단계 함수들)
-# =============================================================================
-from backend.pipeline.config import (
-    PROTEINS,
-    DRUGS,
-    DISEASES,
-    RAW_DATA_ROOT,
-    PROCESSED_DATA_ROOT,
-    VECTORDB_PATH,
-    NEO4J_URI,
-    NEO4J_USER,
-    NEO4J_PASSWORD,
+from backend.pipeline.steps import (
+    step_proteins,
+    step_pdb,
+    step_diseases,
+    step_drugs,
+    step_trials,
+    step_publications,
+    step_disgenet_merge,
+    step_relations,
+    step_graph,
+    step_embeddings,
 )
 
-from backend.pipeline.protein_downloader import download_proteins
-from backend.pipeline.drug_downloader import download_drugs
-from backend.pipeline.diseases_downloader import download_diseases
-from backend.pipeline.trials_downloader import download_trials
-from backend.pipeline.publications_downloader import download_publications
 
-from backend.vectordb.protein_embedder import embed_all_from_csv
-from backend.pipeline.protein_similarity_builder import build_protein_similarity
-
-from backend.graph.schema_generator import Neo4jSchemaGenerator
-from backend.graph.load_all import main as load_graph
-
-from backend.pipeline.pdb_downloader import download_all_pdbs
-from backend.pipeline.data_processor import process_basic_files
-from backend.pipeline.redesign_initializer import init_redesign_folders
+STEPS_ORDERED = [
+    ("proteins", step_proteins.run),
+    ("pdb", step_pdb.run),
+    ("diseases", step_diseases.run),
+    ("drugs", step_drugs.run),
+    ("trials", step_trials.run),
+    ("publications", step_publications.run),
+    ("disgenet", step_disgenet_merge.run),
+    ("relations", step_relations.run),
+    ("graph", step_graph.run),
+    ("embeddings", step_embeddings.run),
+]
 
 
-# =============================================================================
-# 4) Helper — 타이머 + 스텝 실행기
-# =============================================================================
-
-def run_step(step_name: str, func, *args, **kwargs):
-    logger.info(f"========== [START] {step_name} ==========")
-    start_time = time.time()
-
+def _safe_run(name: str, func):
     try:
-        func(*args, **kwargs)
-        elapsed = time.time() - start_time
-        logger.info(f"========== [DONE] {step_name} ({elapsed:.2f}s) ==========\n")
-        return True
+        print(f"\n🚀 [PIPELINE] Step '{name}' 시작")
+        func()
+        print(f"✅ [PIPELINE] Step '{name}' 완료")
     except Exception as e:
-        logger.exception(f"❌ ERROR in step '{step_name}': {str(e)}")
-        return False
+        print(f"❌ [PIPELINE] Step '{name}' 실패: {e}")
+        traceback.print_exc()
 
 
-# =============================================================================
-# 5) Validation (환경/경로/Neo4j)
-# =============================================================================
+def run_all():
+    print("\n===========================================")
+    print("🚀 ReBio Full Data Pipeline 시작")
+    print("===========================================\n")
 
-def validate_environment():
-    logger.info("Validating environment configuration...")
+    print(f"📁 DATA_ROOT: {Config.DATA_ROOT}")
+    print(f"🔗 Neo4j URI: {Config.NEO4J_URI}\n")
 
-    if not NEO4J_URI or not NEO4J_USER or not NEO4J_PASSWORD:
-        raise ValueError("❌ Missing Neo4j credentials in .env")
+    for name, func in STEPS_ORDERED:
+        _safe_run(name, func)
 
-    if not RAW_DATA_ROOT.exists():
-        raise FileNotFoundError(f"❌ RAW_DATA_ROOT does not exist: {RAW_DATA_ROOT}")
-
-    if not VECTORDB_PATH.exists():
-        logger.warning("VECTORDB_PATH missing — creating folder")
-        VECTORDB_PATH.mkdir(parents=True, exist_ok=True)
-
-    logger.info("Environment validation passed.\n")
+    print("\n===========================================")
+    print("🎉 ReBio Full Data Pipeline 완료")
+    print("===========================================\n")
 
 
-# =============================================================================
-# 6) 메인 파이프라인
-# =============================================================================
+def run_single(step_name: str):
+    step_map = {name: func for name, func in STEPS_ORDERED}
+    if step_name not in step_map:
+        valid = ", ".join(step_map.keys())
+        raise ValueError(f"Unknown step '{step_name}'. Valid steps: {valid}")
 
-def main():
-    logger.info("\n===============================")
-    logger.info("🚀 FULL REBIO PIPELINE STARTED")
-    logger.info("===============================\n")
-
-    try:
-        validate_environment()
-    except Exception as e:
-        logger.exception(f"[VALIDATION FAILED] {str(e)}")
-        return
-
-    # STEP 1: Download Raw Data
-    run_step("Download Proteins", download_proteins, PROTEINS)
-    run_step("Download Drugs", download_drugs, DRUGS)
-    run_step("Download Diseases", download_diseases, DISEASES)
-    run_step("Download Trials", download_trials, DRUGS)
-    run_step("Download Publications", download_publications, DISEASES)
-
-    # STEP 2: Embedding + Similarity
-    run_step("Embedding Proteins (ESM2)", embed_all_from_csv)
-    run_step("Build Protein Similarity Graph", build_protein_similarity)
-
-    # STEP 3: Schema & Load
-    run_step("Apply Neo4j Schema", Neo4jSchemaGenerator().apply_schema)
-    run_step("Load Full Graph into Neo4j", load_graph)
-
-    # STEP 4: PDB Download
-    run_step("Download PDB Structures", download_all_pdbs)
-
-    # STEP 5: Processed Data
-    run_step("Process Processed Files", process_basic_files)
-
-    # STEP 6: Redesign Directories
-    run_step("Initialize redesigned/ folders", init_redesign_folders)
-
-    logger.info("\n====================================")
-    logger.info("🎉 Pipeline COMPLETED Successfully!")
-    logger.info("====================================\n")
+    print(f"\n🔧 ReBio Pipeline 단일 스텝 실행: {step_name}\n")
+    _safe_run(step_name, step_map[step_name])
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="ReBio Data Pipeline Runner")
+    parser.add_argument(
+        "--step",
+        type=str,
+        help="실행할 단일 스텝 이름 (예: proteins, pdb, diseases, drugs, trials, publications, disgenet, relations, graph, embeddings)",
+    )
+
+    args = parser.parse_args()
+
+    if args.step:
+        run_single(args.step)
+    else:
+        run_all()
