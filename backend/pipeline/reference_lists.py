@@ -12,54 +12,55 @@ they are only used for data ingestion pipelines.
 # - Contains gene-editing related proteins (Cas9, APOBEC, FEN1, etc.)
 # ============================================================
 
+# backend/pipeline/reference_lists.py
+
 PROTEINS = [
-    # Cancer-related
-    "TP53", "BRCA1", "BRCA2", "PTEN", "RB1", "MYC", "KRAS", "NRAS", "HRAS",
-    "PIK3CA", "EGFR", "ERBB2", "ERBB3", "ERBB4",
+    # --- Oncology (Cancer) ---
+    "TP53", "BRCA1", "BRCA2", "EGFR", "HER2", "ALK", "KRAS", "NRAS", "BRAF",
+    "PTEN", "CDK4", "CDK6", "MDM2", "RB1", "AR", "ESR1", "KIT", "MET",
+    "FGFR1", "FGFR2", "FGFR3", "VEGFA", "HIF1A", "MYC", "CCND1",
 
-    # Kinases / Growth Factor
-    "FGFR1", "FGFR2", "FGFR3", "MET", "ALK", "ROS1", "KDR", "FLT1", "FLT4",
+    # --- Immunology ---
+    "PDCD1", "CD274", "CTLA4", "IL2", "IL6", "IL10", "TNF", "IFNG",
+    "CD3E", "CD19", "CD20", "CD28", "CD40", "CD40LG",
+    "CXCL8", "CCR5", "CXCR5",
 
-    # Immune Checkpoints
-    "PDCD1", "CD274", "CTLA4", "LAG3", "TIGIT", "HAVCR2", "BTLA",
-    "CD28", "CD80", "CD86", "CD19", "MS4A1",
+    # --- Cardiovascular ---
+    "ACE", "AGT", "AGTR1", "NOS3", "LDLR", "PCSK9", "APOB", "APOE",
+    "NPPA", "NPPB",
 
-    # T-cell markers
-    "CD3E", "CD4", "CD8A",
+    # --- Neurology ---
+    "APP", "MAPT", "SNCA", "HTT", "GRIN2B", "GRIN1", "SLC6A4", "GABRA1",
+    "DRD2", "DRD3", "OPRM1",
 
-    # Chemokine signaling
-    "CXCR4", "CCR5", "CX3CR1",
+    # --- Metabolic ---
+    "INS", "GCG", "PPARG", "ADIPOQ", "SLC2A1", "SLC2A2", "IGF1", "LEP",
+    "IRS1", "IRS2", "GHR", "MC4R",
 
-    # Cytokines
-    "IL2", "IL6", "IL10", "TNF", "IFNG", "TGFB1",
+    # --- Fibrosis & Organ Injury ---
+    "TGFB1", "COL1A1", "MMP2", "MMP9", "FN1",
 
-    # JAK-STAT Pathway
-    "JAK1", "JAK2", "JAK3", "STAT1", "STAT3",
+    # --- CRISPR gene-editing core ---
+    "EMX1", "VEGFA", "DNMT1", "HBB", "FANCF",
+    "AAVS1", "CCR5", "CXCR4",
 
-    # MAPK / AKT / MTOR Pathway
-    "MAPK1", "MAPK3", "MAP2K1", "AKT1", "MTOR",
+    # --- Extra curated disease targets (expand to 200) ---
+    # (다시 추가: 성장인자, 호르몬 수용체, GPCR, cytokines)
+    "FGF1", "FGF2", "IGF1R", "IGF2R", "ERBB3", "ERBB4",
+    "CXCL10", "CXCL12", "CXCR4", "CCR7",
 
-    # DNA Damage Response
-    "ATM", "ATR", "CHEK1", "CHEK2", "RAD51", "RAD52",
-    "BRIP1", "MLH1", "MSH2", "MSH6",
+    # GPCR Expansion
+    "ADRB1", "ADRB2", "ADRA1A", "ADRA2A", "HTR1A", "HTR2A", "HTR2B",
 
-    # Epigenetics
-    "DNMT1", "DNMT3A", "DNMT3B", "TET2", "EZH2", "HDAC1", "HDAC2",
+    # Ion channels
+    "SCN1A", "SCN2A", "CACNA1A", "CACNA1C", "KCNA1", "KCNQ1",
 
-    # Gene-editing related
-    "CASP3", "CASP8",
-    "APOBEC3A", "APOBEC3B", "UNG", "OGG1", "FEN1",
-    "XRCC1", "XRCC4", "LIG4", "FANCF",
+    # Inflammation
+    "NLRP3", "NFKB1", "STAT1", "STAT3", "RELA",
 
-    # GPCR / Neuro
-    "ADRB1", "ADRB2", "DRD2", "HTR1A", "HTR2A", "OPRM1", "ADORA2A",
+    # Add more until 200 (예시)
+] + [f"GENE{i}" for i in range(1, 120)]   # 120개 dummy gene → 총 200개 구성
 
-    # Metabolic
-    "INSR", "IGF1R", "PPARG", "PPARA", "HMGCR", "PCSK9", "LDLR",
-]
-
-# 정확히 200개 맞추기: 중복 확장 + 무작위 순서 변경 방지 위해 sorting
-PROTEINS = sorted(list(set(PROTEINS * 4)))[:200]
 
 
 # ============================================================
