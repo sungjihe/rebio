@@ -5,9 +5,9 @@ from pathlib import Path
 
 from backend.pipeline.protein_embeddings_builder import (
     generate_protein_embeddings,
-    build_protein_similarity,
     save_to_chroma,
 )
+from backend.graph.gds_client import GDSClient
 from dotenv import load_dotenv
 
 # =============================================================================
@@ -32,13 +32,12 @@ def run():
     print("\n📌 2) ChromaDB에 저장...")
     save_to_chroma(ids, vectors)
 
-    print("\n📌 3) 유사도 행렬 계산 및 similarity CSV 생성...")
-    build_protein_similarity(top_k_per_protein=20, min_score=0.70)
+    print("\n📌 3) Neo4j GDS KNN 기반 SIMILAR_TO 생성...")
+    GDSClient().run_similarity_pipeline()
 
-    print("\n✅ STEP: embeddings 완료\n")
+    print("\n✅ STEP: embeddings + GDS SIMILAR_TO 완료\n")
 
 
 # CLI 실행 지원
 if __name__ == "__main__":
     run()
-
