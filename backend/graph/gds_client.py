@@ -3,11 +3,10 @@
 import json
 import logging
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 
 from neo4j import GraphDatabase
 from graphdatascience import GraphDataScience
-
 from backend.config import Config
 
 logger = logging.getLogger("GDSClient")
@@ -16,11 +15,13 @@ logging.basicConfig(level=logging.INFO)
 
 class GDSClient:
     """
-    Handles all Neo4j Graph Data Science operations:
-      1) Load embeddings from JSONL
-      2) Apply to Neo4j Protein nodes
-      3) Project 'protein_similarity_graph'
-      4) Run KNN → SIMILAR_TO relations
+    ReBio GDS Pipeline — Protein + TherapeuticProtein
+
+    기능:
+      1) 임베딩 JSONL 읽기
+      2) Neo4j 노드에 embedding property 저장
+      3) GDS Graph Projection 생성
+      4) GDS KNN → SIMILAR_TO 관계 생성
     """
 
     def __init__(self):
@@ -33,108 +34,112 @@ class GDSClient:
 
         logger.info(f"[GDS] Connected to Neo4j at {self.uri}")
 
-    # -------------------------------------------------------
-    # Read JSONL Embeddings
-    # -------------------------------------------------------
-    def load_embeddings_jsonl(self, jsonl_path: Path):
+    # ------------------------------------------------------------
+    # Load JSONL embeddings
+    # ------------------------------------------------------------
+    def load_embeddings_jsonl(self, jsonl_path: Path) -> List[Dict]:
         if not jsonl_path.exists():
             raise FileNotFoundError(f"❌ Embedding JSONL not found: {jsonl_path}")
 
-        logger.info(f"[GDS] Loading embeddings from JSONL → {jsonl_path}")
+        logger.info(f"[GDS] Loading embeddings from {jsonl_path}")
 
         rows = []
-        with open(jsonl_path, "r", encoding="utf-8") as f:
+        with jsonl_path.open("r", encoding="utf-8") as f:
             for line in f:
-                obj = json.loads(line)
+                obj = json.loads(line.strip())
                 if "id" not in obj or "embedding" not in obj:
                     continue
 
                 rows.append({
                     "id": obj["id"],
-                    "embedding": obj["embedding"],
+                    "embedding": obj["embedding"]
                 })
 
         logger.info(f"[GDS] Loaded {len(rows)} embeddings")
         return rows
 
-    # -------------------------------------------------------
-    # Write embeddings to Neo4j
-    # -------------------------------------------------------
-    def apply_embeddings_to_neo4j(self, rows: List[dict]):
-        logger.info("[GDS] Applying embeddings to Neo4j Protein nodes...")
+    # ------------------------------------------------------------
+    # Apply embeddings to Neo4j nodes
+    # ------------------------------------------------------------
+    def apply_embeddings(self, rows: List[Dict]):
+        logger.info("[GDS] Applying embeddings to Neo4j nodes...")
 
         query = """
         UNWIND $rows AS row
-        MATCH (p:Protein {uniprot_id: row.id})
-        SET p.embedding = row.embedding
+        MATCH (n)
+        WHERE n.uniprot_id = row.id
+        SET n.embedding = row.embedding
         """
 
-        with self.driver.session() as session:
-            session.run(query, rows=rows)
+        with self.driver.session() as s:
+            s.run(query, rows=rows)
 
-        logger.info("[GDS] Embeddings applied to Neo4j successfully.")
+        logger.info("[GDS] Embeddings applied successfully")
 
-    # -------------------------------------------------------
-    # Build GDS Graph Projection
-    # -------------------------------------------------------
+    # ------------------------------------------------------------
+    # Create graph projection
+    # ------------------------------------------------------------
     def project_graph(self):
         name = "protein_similarity_graph"
 
-        # 이미 projection 있으면 drop
+        # Drop existing projection
         if self.gds.graph.exists(name):
-            logger.info("[GDS] Existing projection found → dropping")
+            logger.info("[GDS] Dropping existing graph projection")
             self.gds.graph.drop(name)
 
-        logger.info("[GDS] Creating new graph projection 'protein_similarity_graph'")
+        logger.info("[GDS] Creating graph projection 'protein_similarity_graph'")
 
-        G, result = self.gds.graph.project(
+        graph, result = self.gds.graph.project(
             name,
-            {"Protein": {"properties": ["embedding"]}},
-            {},   # no relationships needed
+            {
+                # BOTH labels are allowed
+                "Protein": {"properties": ["embedding"]},
+                "TherapeuticProtein": {"properties": ["embedding"]},
+            },
+            {}  # no relationships
         )
 
         logger.info(f"[GDS] Projection created: {result}")
-        return G
+        return graph
 
-    # -------------------------------------------------------
-    # Run KNN to create SIMILAR_TO edges
-    # -------------------------------------------------------
-    def run_knn(self, G, top_k=20, cutoff=0.70):
+    # ------------------------------------------------------------
+    # Run KNN → SIMILAR_TO relationships
+    # ------------------------------------------------------------
+    def run_knn(self, graph, top_k=20, cutoff=0.70):
         logger.info("[GDS] Running KNN similarity...")
 
         result = self.gds.knn.write(
-            G,
+            graph,
             nodeProperties=["embedding"],
             topK=top_k,
             similarityCutoff=cutoff,
             writeRelationshipType="SIMILAR_TO",
-            writeProperty="sim_score",
+            writeProperty="sim_score"
         )
 
-        logger.info(f"[GDS] KNN write finished: {result}")
+        logger.info(f"[GDS] KNN completed: {result}")
 
-    # -------------------------------------------------------
-    # Public entry
-    # -------------------------------------------------------
+    # ------------------------------------------------------------
+    # MASTER PIPELINE
+    # ------------------------------------------------------------
     def run_similarity_pipeline(
         self,
-        jsonl_path: Path = Config.PROCESSED_DATA_ROOT / "protein_embeddings.jsonl",
+        embeddings_jsonl: Path = Config.PROCESSED_DATA_ROOT / "protein_embeddings.jsonl",
         top_k: int = 20,
         cutoff: float = 0.70,
     ):
-        logger.info("===============================================")
+        logger.info("\n===============================================")
         logger.info("🧬 GDS Similarity Pipeline Started")
-        logger.info("===============================================")
+        logger.info("===============================================\n")
 
-        rows = self.load_embeddings_jsonl(jsonl_path)
-        self.apply_embeddings_to_neo4j(rows)
+        rows = self.load_embeddings_jsonl(embeddings_jsonl)
+        self.apply_embeddings(rows)
 
-        G = self.project_graph()
-        self.run_knn(G, top_k=top_k, cutoff=cutoff)
+        graph = self.project_graph()
+        self.run_knn(graph, top_k=top_k, cutoff=cutoff)
 
-        logger.info("🎉 GDS Similarity Pipeline Completed")
+        logger.info("\n🎉 GDS Similarity Pipeline Completed")
 
 
-# CLI entry
 if __name__ == "__main__":
     GDSClient().run_similarity_pipeline()

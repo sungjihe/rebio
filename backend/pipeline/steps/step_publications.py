@@ -13,3 +13,7 @@ def run():
     print("📚 [STEP: publications] PubMed 논문 메타데이터 다운로드")
     download_publications(DISEASES)
     print("✅ [STEP: publications] 완료")
+
+
+if __name__ == "__main__":
+    run()

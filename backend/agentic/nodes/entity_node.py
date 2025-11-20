@@ -13,84 +13,88 @@ logging.basicConfig(level=logging.INFO)
 
 class EntityNode:
     """
-    질문에서 엔티티를 추출하는 Multi-Agent 노드.
-    uniprot_id / disease_id / drugbank_id / protein_sequence / image_path 등을 식별한다.
+    EntityNode v2 (TherapeuticProtein 기반)
+    - uniprot_id (protein or therapeutic protein)
+    - disease_id
+    - protein_sequence
+    - image_path
+
+    ❌ drugbank_id 제거됨
     """
 
     def __init__(self):
-        self.llm = VisionReasoner()  # 텍스트-only도 지원
+        # VisionReasoner(text-only도 지원)
+        self.llm = VisionReasoner()
 
-    # ─────────────────────────────────────────────
-    # 실행 함수
-    # ─────────────────────────────────────────────
+    # ---------------------------------------------------------
+    # 실행
+    # ---------------------------------------------------------
     def run(self, state: HeliconState) -> HeliconState:
 
         question = state.question
 
         prompt = f"""
-Extract biological entities from the user's question.  
+Extract biological entities from the user question.
 Return ONLY a valid JSON object — no explanation.
 
-Keys to extract:
-- uniprot_id (string or null)
-- disease_id (string or null)
-- drugbank_id (string or null)
-- protein_sequence (AA sequence or null)
-- image_path (string or null)
+Extract and fill the following keys:
+- uniprot_id: protein ID or therapeutic protein UniProt ID
+- disease_id: any disease name / identifier
+- protein_sequence: amino-acid sequence (ACDEFGHIKLMNPQRSTVWY)
+- image_path: if the question references an image
 
 Rules:
-- If nothing is found, return null for that field.
-- Ensure protein_sequence is uppercase and contains ONLY valid amino acids (ACDEFGHIKLMNPQRSTVWY).
-- Clean whitespace.
-- Only one JSON object must be returned.
+- If a value is not found, return null.
+- protein_sequence must be uppercase, AA-only.
+- uniprot_id must be uppercase.
+- Return ONLY one JSON object.
 
 User question:
 {question}
 
 Return JSON:
 {{
-    "uniprot_id": null,
-    "disease_id": null,
-    "drugbank_id": null,
-    "protein_sequence": null,
-    "image_path": null
+  "uniprot_id": null,
+  "disease_id": null,
+  "protein_sequence": null,
+  "image_path": null
 }}
 """
 
-        # VisionReasoner 대신 텍스트-only 모드
+        # LLM 호출
         response = self.llm.reason(prompt)
         raw = response["answer"]
 
+        # JSON decode
         try:
             data = json.loads(raw)
         except Exception:
             logger.error("[EntityNode] JSON Parse Error. Using fallback.")
             data = {}
 
-        # 기본값 보장
-        for key in ["uniprot_id", "disease_id", "drugbank_id", "protein_sequence", "image_path"]:
+        # Default keys
+        for key in ["uniprot_id", "disease_id", "protein_sequence", "image_path"]:
             data.setdefault(key, None)
 
-        # Clean-up and normalization
+        # Normalize uniprot_id
         if isinstance(data.get("uniprot_id"), str):
             data["uniprot_id"] = data["uniprot_id"].strip().upper()
-
-        if isinstance(data.get("drugbank_id"), str):
-            data["drugbank_id"] = data["drugbank_id"].strip().upper()
 
         # Validate protein sequence
         seq = data.get("protein_sequence")
         if isinstance(seq, str):
-            seq_clean = seq.replace(" ", "").upper()
+            seq_clean = seq.replace(" ", "").strip().upper()
             valid_set = set("ACDEFGHIKLMNPQRSTVWY")
             if all(aa in valid_set for aa in seq_clean):
                 data["protein_sequence"] = seq_clean
             else:
-                logger.warning("[EntityNode] Invalid AA detected. Resetting sequence.")
+                logger.warning("[EntityNode] Invalid amino acids removed → sequence reset.")
                 data["protein_sequence"] = None
 
+        # Save to state
         state.entities = data
         state.log("entity_node", data)
 
         logger.info(f"[EntityNode] Extracted entities: {data}")
         return state
+

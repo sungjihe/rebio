@@ -21,24 +21,13 @@ from backend.agentic.nodes.final_node import FinalNode
 logger = logging.getLogger("HeliconWorkflow")
 logging.basicConfig(level=logging.INFO)
 
-
-# -----------------------------------------------------
-# Supervisor routing rule
-# -----------------------------------------------------
 def supervisor_decider(state: HeliconState):
-    """
-    Read SupervisorNode.next_node and route accordingly.
-    """
     return state.next_node
 
-
-# -----------------------------------------------------
-# Build LangGraph multi-agent workflow
-# -----------------------------------------------------
 def build_workflow():
     graph = StateGraph(HeliconState)
 
-    # 1) Register nodes
+    # Register nodes
     graph.add_node("supervisor", SupervisorNode().run)
     graph.add_node("intent", IntentNode().run)
     graph.add_node("entity", EntityNode().run)
@@ -52,10 +41,10 @@ def build_workflow():
     graph.add_node("reason", ReasonerNode().run)
     graph.add_node("final", FinalNode().run)
 
-    # 2) Entry point
+    # Entry
     graph.set_entry_point("supervisor")
 
-    # 3) Dynamic routing: supervisor → next_node
+    # Routing
     graph.add_conditional_edges(
         source="supervisor",
         condition=supervisor_decider,
@@ -74,15 +63,14 @@ def build_workflow():
         }
     )
 
-    # 4) After each node → return to supervisor
-    for node in [
+    # All nodes except final go back to supervisor
+    for n in [
         "intent", "entity", "vision", "graph",
         "evidence", "crawler", "design",
         "structure", "render", "reason"
     ]:
-        graph.add_edge(node, "supervisor")
+        graph.add_edge(n, "supervisor")
 
-    # 5) Final → END
     graph.add_edge("final", END)
 
     return graph

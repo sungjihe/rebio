@@ -59,21 +59,99 @@ PROTEINS = [
     "NLRP3", "NFKB1", "STAT1", "STAT3", "RELA",
 
     # Add more until 200 (예시)
-] + [f"GENE{i}" for i in range(1, 120)]   # 120개 dummy gene → 총 200개 구성
+] 
 
 
 
 # ============================================================
-# 2) Drugs (for downloader only)
-# ============================================================
-DRUGS = [
-    "Doxorubicin",
-    "Erlotinib",
-    "Imatinib",
-    "Trastuzumab",
-    "Pembrolizumab",
-    "Nivolumab",
+# 2) THERAPEUTIC_PROTEIN
+#=========================================================
+
+THERAPEUTIC_PROTEINS = [
+    # ================================
+    # 1) Monoclonal Antibodies (mAb)
+    # ================================
+    "Trastuzumab", "Pertuzumab", "Ado-trastuzumab emtansine",
+    "Nivolumab", "Pembrolizumab", "Cemiplimab",
+    "Atezolizumab", "Durvalumab", "Avelumab",
+    "Ipilimumab", "Relatlimab",
+    "Bevacizumab", "Ramucirumab",
+    "Cetuximab", "Panitumumab", "Necitumumab",
+    "Rituximab", "Obinutuzumab", "Ofatumumab",
+    "Daratumumab", "Elotuzumab", "Isatuximab",
+    
+    "Infliximab", "Adalimumab", "Golimumab", "Certolizumab pegol",
+    "Tocilizumab", "Sarilumab", "Siltuximab",
+    "Secukinumab", "Ixekizumab", "Brodalumab",
+    "Ustekinumab", "Risankizumab", "Guselkumab",
+    "Dupilumab", "Lebrikizumab", "Omalizumab",
+    
+    "Denosumab", "Romosozumab",
+    "Eculizumab", "Ravulizumab",
+    "Emicizumab",
+    "Canakinumab", "Gevokizumab",
+    "Teprotumumab",
+    "Belimumab",
+    "Vedolizumab", "Natalizumab",
+    "Palivizumab",
+    "Alemtuzumab",
+    "Basiliximab", "Daclizumab",
+    "Inotuzumab ozogamicin",
+    "Brentuximab vedotin",
+    "Gemtuzumab ozogamicin",
+    "Polatuzumab vedotin",
+    "Tralokinumab",
+    "Abciximab",
+    "Anifrolumab",
+    
+    # ================================
+    # 2) Fusion Proteins / Receptor Traps
+    # ================================
+    "Etanercept",
+    "Aflibercept",
+    "Rilonacept",
+    "Belatacept",
+    "Romiplostim",
+    "Tebentafusp",
+    "Blinatumomab",
+    "Emapalumab",
+    "Efgartigimod",
+    "Abetimus",
+
+    # ================================
+    # 3) Cytokine / Interleukin / Interferon
+    # ================================
+    "Interferon alpha", "Interferon beta", "Interferon gamma",
+    "IL-2", "Aldesleukin",
+    "IL-6", "Oprelvekin",
+    "Granulocyte colony-stimulating factor",
+    "Granulocyte-macrophage colony-stimulating factor",
+    "Peginterferon alfa-2a",
+
+    # ================================
+    # 4) Hormone / Peptide Therapeutics
+    # ================================
+    "Insulin", "Insulin glargine", "Insulin detemir",
+    "GLP-1", "Semaglutide", "Liraglutide",
+    "Teriparatide", "Parathyroid hormone",
+    "EPO", "Darbepoetin alfa",
+    "Somatropin", "Growth hormone",
+
+    # ================================
+    # 5) Enzyme Replacement Therapies (ERT)
+    # ================================
+    "Agalsidase alfa",
+    "Agalsidase beta",
+    "Laronidase",
+    "Idursulfase",
+    "Velaglucerase alfa",
+    "Imiglucerase",
+    "Alglucosidase alfa",
+    "Asfotase alfa",
 ]
+
+
+
 
 
 # ============================================================

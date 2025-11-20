@@ -37,19 +37,18 @@ class Neo4jSchemaGenerator:
             # ========================================
             "CREATE CONSTRAINT IF NOT EXISTS FOR (p:Protein) REQUIRE p.uniprot_id IS UNIQUE;",
             "CREATE INDEX IF NOT EXISTS FOR (p:Protein) ON (p.name);",
-            "CREATE INDEX IF NOT EXISTS FOR (p:Protein) ON (p.length);",
+
+            # ========================================
+            # TherapeuticProtein
+            # ========================================
+            "CREATE CONSTRAINT IF NOT EXISTS FOR (t:TherapeuticProtein) REQUIRE t.uniprot_id IS UNIQUE;",
+            "CREATE INDEX IF NOT EXISTS FOR (t:TherapeuticProtein) ON (t.name);",
 
             # ========================================
             # Disease
             # ========================================
             "CREATE CONSTRAINT IF NOT EXISTS FOR (d:Disease) REQUIRE d.disease_id IS UNIQUE;",
             "CREATE INDEX IF NOT EXISTS FOR (d:Disease) ON (d.name);",
-
-            # ========================================
-            # Drug
-            # ========================================
-            "CREATE CONSTRAINT IF NOT EXISTS FOR (dr:Drug) REQUIRE dr.drugbank_id IS UNIQUE;",
-            "CREATE INDEX IF NOT EXISTS FOR (dr:Drug) ON (dr.name);",
 
             # ========================================
             # Trial
@@ -68,8 +67,13 @@ class Neo4jSchemaGenerator:
             # ========================================
             "CREATE INDEX IF NOT EXISTS FOR ()-[r:SIMILAR_TO]-() ON (r.sim_score);",
             "CREATE INDEX IF NOT EXISTS FOR ()-[r:ASSOCIATED_WITH]-() ON (r.score);",
-            "CREATE INDEX IF NOT EXISTS FOR ()-[r:TARGETS]-() ON (r.evidence_score);",
-            "CREATE INDEX IF NOT EXISTS FOR ()-[r:USED_FOR]-() ON (r.indication);",
+
+            # TherapeuticProtein → Protein 관계들
+            "CREATE INDEX IF NOT EXISTS FOR ()-[r:TARGETS]-() ON (r.strength);",
+            "CREATE INDEX IF NOT EXISTS FOR ()-[r:BINDS_TO]-() ON (r.affinity);",
+            "CREATE INDEX IF NOT EXISTS FOR ()-[r:MODULATES]-() ON (r.effect_strength);",
+
+            # Publication mentions confidence
             "CREATE INDEX IF NOT EXISTS FOR ()-[r:MENTIONS]-() ON (r.confidence);",
         ]
 
@@ -78,4 +82,4 @@ class Neo4jSchemaGenerator:
                 logger.info(f"[Neo4j] Running: {q}")
                 session.run(q)
 
-        logger.info("🎉 All Neo4j schema applied successfully!")
+        logger.info("🎉 Schema Applied Successfully!")

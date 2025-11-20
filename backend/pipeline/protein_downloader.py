@@ -5,7 +5,9 @@ from typing import Iterable, List
 
 import requests
 
-from .config import RAW_DATA_ROOT
+from backend.config import Config
+
+RAW_DATA_ROOT = Config.RAW_DATA_ROOT
 
 logger = logging.getLogger("protein_downloader")
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
@@ -17,30 +19,38 @@ OUT_PATH = RAW_DATA_ROOT / "proteins.csv"
 
 def fetch_one(query: str):
     """
-    UniProt REST API (TSV) 에서 1개 결과만 가져오기.
-    query 에는 gene symbol (TP53) 이나 UniProt ID (P04637) 둘 다 넣어도 됨.
+    UniProt 정확 gene match:
+    gene_exact:TP53  → 정확한 TP53 단백질만 반환
     """
     params = {
-        # reviewed:true → Swiss-Prot (검증된 시퀀스) 우선 사용
-        "query": f"({query}) AND reviewed:true",
+        "query": f"gene_exact:{query} AND reviewed:true",
         "format": "tsv",
         "fields": "accession,protein_name,gene_primary,sequence",
         "size": 1,
     }
 
     r = requests.get(UNIPROT_BASE, params=params, timeout=30)
+    logger.debug(f"[UNIPROT] URL = {r.url}")
     r.raise_for_status()
 
     lines = r.text.splitlines()
     if len(lines) < 2:
-        logger.warning(f"[UNIPROT] No hit for '{query}'")
+        logger.warning(f"[UNIPROT] No exact hit for '{query}'")
         return None
 
-    # 첫 줄은 header, 두 번째 줄이 첫 결과
     parts = lines[1].split("\t")
     if len(parts) < 4:
         logger.warning(f"[UNIPROT] Unexpected TSV format for '{query}'")
         return None
+
+    accession, name, gene, seq = parts[:4]
+    return {
+        "uniprot_id": accession,
+        "name": name,
+        "gene": gene,
+        "sequence": seq,
+    }
+
 
     accession, name, gene, seq = parts[:4]
     return {

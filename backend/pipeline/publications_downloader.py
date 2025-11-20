@@ -1,7 +1,9 @@
 import os
 import pandas as pd
 from Bio import Entrez
-from .config import RAW_DATA_ROOT
+from backend.config import Config
+
+RAW_DATA_ROOT = Config.RAW_DATA_ROOT
 
 
 Entrez.email = "your@email.com"

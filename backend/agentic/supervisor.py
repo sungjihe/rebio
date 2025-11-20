@@ -6,10 +6,9 @@ from backend.agentic.state import HeliconState
 logger = logging.getLogger("Supervisor")
 logging.basicConfig(level=logging.INFO)
 
-
 class SupervisorNode:
     """
-    Dynamic Router for Helicon Agent.
+    Dynamic Router for Helicon Multi-Agent Workflow.
     """
 
     def run(self, state: HeliconState) -> HeliconState:
@@ -18,10 +17,10 @@ class SupervisorNode:
         state.log("supervisor", {"next_node": next_step})
         return state
 
-    #──────────────────────────────────────────────
+    # -----------------------------------------------------
     def decide_next(self, state: HeliconState):
 
-        # 1) Intent
+        # 1) Intent first
         if state.intent is None:
             return "intent"
 
@@ -29,14 +28,14 @@ class SupervisorNode:
         if not state.entities:
             return "entity"
 
-        # 3) VisionNode 조건
+        # 3) Vision check
         need_vision = False
 
         if state.image_path and state.vision_data is None:
             need_vision = True
 
-        keywords = ["figure", "image", "graph", "chart", "microscopy", "table"]
-        if any(k in state.question.lower() for k in keywords):
+        vision_keywords = ["image", "figure", "plot", "chart", "gel", "microscopy"]
+        if any(k in state.question.lower() for k in vision_keywords):
             if state.vision_data is None:
                 need_vision = True
 
@@ -55,7 +54,7 @@ class SupervisorNode:
         if state.crawler_data is None:
             return "crawler"
 
-        # 7) Protein design (optional based on intent)
+        # 7) Protein design
         if state.intent == "protein_design" and state.design_result is None:
             return "design"
 
@@ -64,11 +63,14 @@ class SupervisorNode:
             return "structure"
 
         # 9) Render 3D
-        if state.structure_result and state.structure_result.get("image") is None:
+        if state.structure_result and state.structure_image is None:
             return "render"
 
-        # 10) Final reasoning
-        return "reason"
+        # 10) Reasoning aggregation
+        if state.reasoning_summary is None:
+            return "reason"
 
+        # 11) Final
+        return "final"
 
 

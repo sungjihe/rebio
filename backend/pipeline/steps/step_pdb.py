@@ -11,3 +11,8 @@ def run():
     print("🧩 [STEP: pdb] PDB / AlphaFold 구조 다운로드")
     download_all_pdbs()
     print("✅ [STEP: pdb] 완료")
+
+
+
+if __name__ == "__main__":
+    run()

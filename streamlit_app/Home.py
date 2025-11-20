@@ -8,16 +8,27 @@ st.set_page_config(
 
 st.title("🧬 ReBio AI Suite")
 st.markdown("""
-Welcome to **ReBio Multi-Agent System** powered by:
+Welcome to **ReBio Multi-Agent System**, powered by:
 
-- LangGraph
-- GPT-4o
-- BioMistral
-- Neo4j GraphDB
-- ESMFold
-- ChromaDB Vector Search
+- **LangGraph Multi-Agent Workflow**
+- **GPT-4o** reasoning & summarization
+- **BioMistral** scientific reasoning
+- **Neo4j GraphDB** (Protein–Disease–TherapeuticProtein Knowledge Graph)
+- **ESMFold** structure prediction
+- **ChromaDB** vector-based embedding search
 
-### Choose a module from left sidebar:
-- **Graph Assistant** → Ask disease/drug/protein questions  
-- **Protein Analyzer** → Enter sequence → Structure + redesign + report  
+### Choose a module from the left sidebar:
+
+- **Graph Assistant** → Ask questions about proteins, diseases, therapeutic proteins  
+- **Protein Analyzer** → Input protein sequence → Structure + redesign + functional analysis  
+
+---
+This system supports **therapeutic protein–centric** workflows:
+- Monoclonal antibodies  
+- Cytokines  
+- Fusion proteins  
+- Enzyme replacement proteins  
+- Peptide therapeutics  
+
 """)
+

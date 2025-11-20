@@ -16,3 +16,7 @@ def run():
     print(f"🧪 [STEP: trials] ClinicalTrials.gov 임상시험 다운로드 → {out_path}")
     download_trials(DRUGS, out_path=str(out_path))
     print("✅ [STEP: trials] 완료")
+
+
+if __name__ == "__main__":
+    run()

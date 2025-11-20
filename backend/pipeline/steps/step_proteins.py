@@ -13,3 +13,8 @@ def run():
     print("🧬 [STEP: proteins] UniProt 단백질 다운로드")
     download_proteins(PROTEINS)
     print("✅ [STEP: proteins] 완료")
+
+
+if __name__ == "__main__":
+    run()
+

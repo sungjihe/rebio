@@ -18,6 +18,8 @@ import chromadb
 
 from backend.config import Config
 
+RAW_DATA_ROOT = Config.RAW_DATA_ROOT
+
 
 # -------------------------------------------------------
 # Utility: l2 normalization

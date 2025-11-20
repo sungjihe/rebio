@@ -1,3 +1,4 @@
+# backend/config.py
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -20,7 +21,7 @@ class Config:
     NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD")
 
     # ======================================
-    # 2) Data Paths
+    # 2) Data Roots
     # ======================================
     DATA_ROOT = BASE_DIR / "data"
 
@@ -36,20 +37,26 @@ class Config:
     # 3) VectorDB (Chroma)
     # ======================================
     VECTORDB_ROOT = DATA_ROOT / "vectordb"
+
+    # Protein embeddings
     VECTORDB_PROTEIN = VECTORDB_ROOT / "protein"
-    VECTORDB_CHEMICAL = VECTORDB_ROOT / "chemical"
+
+    # Therapeutic Protein embeddings
+    VECTORDB_TP = VECTORDB_ROOT / "therapeutic_protein"
+
+    # Document / RAG embeddings
     VECTORDB_RAG = VECTORDB_ROOT / "rag"
 
-    for p in [VECTORDB_ROOT, VECTORDB_PROTEIN, VECTORDB_CHEMICAL, VECTORDB_RAG]:
+    for p in [VECTORDB_ROOT, VECTORDB_PROTEIN, VECTORDB_TP, VECTORDB_RAG]:
         p.mkdir(parents=True, exist_ok=True)
 
     # ======================================
-    # 4) Local LLM (BioMistral / OpenBioLLM / LoRA)
+    # 4) Local LLM (BioMistral / LoRA)
     # ======================================
-    LLM_MODEL_PATH = Path(os.getenv("LLM_MODEL_PATH") or BASE_DIR / "models" / "rebio-lora")
+    LLM_MODEL_PATH = Path(os.getenv("LLM_MODEL_PATH") or BASE_DIR / "models/rebio-lora")
 
     # Vision Reasoner
-    VISION_MODEL_PATH = Path(os.getenv("VISION_MODEL_PATH") or BASE_DIR / "models" / "blip2")
+    VISION_MODEL_PATH = Path(os.getenv("VISION_MODEL_PATH") or BASE_DIR / "models/blip2")
 
     # ======================================
     # 5) FastAPI
@@ -57,6 +64,6 @@ class Config:
     API_HOST = os.getenv("API_HOST", "0.0.0.0")
     API_PORT = int(os.getenv("API_PORT", "8000"))
 
-    # Streamlit → FastAPI 연결
     FASTAPI_URL = os.getenv("FASTAPI_URL", "http://localhost:8000")
+
 

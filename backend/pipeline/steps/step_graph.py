@@ -12,3 +12,7 @@ def run():
     print("🧱 [STEP: graph] Neo4j 그래프 빌드 시작")
     build_full_graph(data_root=Config.RAW_DATA_ROOT)
     print("✅ [STEP: graph] 완료")
+
+
+if __name__ == "__main__":
+    run()

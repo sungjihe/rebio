@@ -1,3 +1,5 @@
+# scripts/benchmark_cypher.py
+
 import time
 from backend.graph.graph_search_client import GraphSearchClient
 
@@ -5,16 +7,21 @@ from backend.graph.graph_search_client import GraphSearchClient
 def benchmark():
     client = GraphSearchClient()
 
-    protein = "P38398"   # 예시: p53
+    # Example: p53
+    protein = "P38398"
+
+    # Example: Disease ID
     disease = "D012345"
-    drug = "DB00001"
+
+    # Example: Therapeutic Protein (UniProt ID)
+    tp = "P12345"
 
     tests = [
         ("similar_proteins", lambda: client.similar_proteins(protein, 20)),
         ("predict_diseases", lambda: client.predict_diseases(protein, 20)),
-        ("recommend_drugs", lambda: client.recommend_drugs(protein, 20)),
-        ("evidence_protein_disease", lambda: client.evidence_paths_protein_disease(protein, disease)),
-        ("evidence_protein_drug", lambda: client.evidence_paths_protein_drug(protein, drug)),
+        ("recommend_therapeutics", lambda: client.recommend_therapeutics(protein, 20)),
+        ("evidence_protein_disease", lambda: client.evidence_paths(protein, disease)),
+        ("evidence_protein_therapeutic", lambda: client.evidence_paths(protein, tp)),
     ]
 
     for name, fn in tests:
@@ -24,6 +31,7 @@ def benchmark():
             fn()
             t1 = time.time()
             times.append(t1 - t0)
+
         avg = sum(times) / len(times)
         print(f"⚡ {name}: avg {avg:.4f}s  (runs: {times})")
 
@@ -32,3 +40,4 @@ def benchmark():
 
 if __name__ == "__main__":
     benchmark()
+
