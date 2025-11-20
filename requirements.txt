@@ -60,3 +60,7 @@ uvicorn[standard]==0.29.0
 streamlit==1.38.0
 py3Dmol==2.5.3
 Pillow==10.4.0
+matplotlib
+
+neo4j
+gql[aiohttp]

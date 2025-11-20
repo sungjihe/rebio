@@ -1,5 +1,5 @@
 # streamlit_app/ProteinAnalyzer.py
-
+import sys
 import os
 import json
 import requests
@@ -11,6 +11,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from utils_3d import render_3d_structure, render_mutation_overlay
+
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
 
 
 # -----------------------------------------------------------------

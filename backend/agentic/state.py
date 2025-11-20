@@ -16,9 +16,6 @@ class HeliconState(BaseModel):
     intent: Optional[str] = None
     entities: Dict[str, Any] = Field(default_factory=dict)
 
-    # Vision
-    vision_data: Optional[Dict[str, Any]] = None
-
     # Graph DB
     graph_result: Optional[List[Dict[str, Any]]] = None
 

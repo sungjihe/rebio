@@ -6,7 +6,7 @@ from backend.config import Config
 RAW_DATA_ROOT = Config.RAW_DATA_ROOT
 
 
-Entrez.email = "your@email.com"
+Entrez.email = "sjyeee8704@gmail.com"
 
 def fetch_pubmed(query: str, retmax=20):
     handle = Entrez.esearch(db="pubmed", term=query, retmax=retmax)

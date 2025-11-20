@@ -1,5 +1,3 @@
-# backend/pipeline/steps/__init__.py
-
 """
 Step-based data pipeline for ReBio.
 
@@ -10,19 +8,20 @@ Step-based data pipeline for ReBio.
 - diseases
 - trials
 - publications
-- disgenet_merge
+- open_targets
 - relations
 - graph
 - embeddings
 """
 
 from . import step_proteins
-from . import step_therapeutic_proteins   # ★ NEW
+from . import step_therapeutic_proteins
 from . import step_pdb
 from . import step_diseases
 from . import step_trials
 from . import step_publications
-from . import step_disgenet_merge
+from . import step_open_targets
 from . import step_relations
 from . import step_graph
 from . import step_embeddings
+

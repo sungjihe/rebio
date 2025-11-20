@@ -1,4 +1,4 @@
-# backend/pipeline/protein_embeddings_builder.py
+#backend/pipeline/protein_embeddings_builder.py
 
 import os
 import json
@@ -10,7 +10,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 import chromadb
-from chromadb.utils import embedding_functions
+
+from backend.config import RAW_DATA_ROOT, PROCESSED_DATA_ROOT
 
 # =============================================================================
 # 0) 환경 설정
@@ -19,14 +20,19 @@ BASE_DIR = Path(__file__).resolve().parents[2]
 ENV_PATH = BASE_DIR / ".env"
 load_dotenv(ENV_PATH)
 
-PROCESSED_DIR = BASE_DIR / "data" / "processed"
-EMBED_OUTPUT = PROCESSED_DIR / "protein_embeddings.jsonl"
-SIM_OUTPUT = PROCESSED_DIR / "protein_similarity.csv"
+# JSONL (processed)
+EMBED_OUTPUT = PROCESSED_DATA_ROOT / "protein_embeddings.jsonl"
 
+# similarity.csv → RAW (Neo4j builder가 RAW에서 찾기 때문)
+SIM_OUTPUT = RAW_DATA_ROOT / "protein_similarity.csv"
+
+# ChromaDB 저장 위치
 VECTORDB_PATH = BASE_DIR / "data" / "vectordb" / "proteins"
 VECTORDB_PATH.mkdir(parents=True, exist_ok=True)
 
-PROTEIN_CSV = PROCESSED_DIR / "proteins.csv"
+# Proteins CSV (RAW)
+PROTEIN_CSV = RAW_DATA_ROOT / "proteins.csv"
+
 
 # =============================================================================
 # 1) GPU 자동 탐지
@@ -40,7 +46,7 @@ def get_device():
 # =============================================================================
 def load_embedding_model():
     print("🔬 Loading ESM2 embedding model...")
-    model_name = "facebook/esm2_t6_8M_UR50D"  # 중간 크기 (빠르고 정확도 좋음)
+    model_name = "facebook/esm2_t6_8M_UR50D"
     model = SentenceTransformer(model_name, device=get_device())
     print(f"✅ Loaded model: {model_name}")
     return model
@@ -49,6 +55,14 @@ def load_embedding_model():
 def generate_protein_embeddings():
     print(f"📄 Loading protein list: {PROTEIN_CSV}")
     df = pd.read_csv(PROTEIN_CSV)
+
+    # 🛠️ 1) 중복 UniProt 제거 (필수)
+    before = len(df)
+    df = df.drop_duplicates(subset=["uniprot_id"])
+    after = len(df)
+
+    if before != after:
+        print(f"⚠️ Removed {before - after} duplicated UniProt IDs")
 
     if "uniprot_id" not in df.columns or "sequence" not in df.columns:
         raise ValueError("❌ CSV must contain 'uniprot_id' and 'sequence' columns.")
@@ -71,10 +85,9 @@ def generate_protein_embeddings():
             embeddings.append(emb)
             ids.append(pid)
 
-            # JSONL 저장
             f.write(json.dumps({"id": pid, "embedding": emb.tolist()}) + "\n")
 
-    print(f"✅ Embedding saved to: {EMBED_OUTPUT}")
+    print(f"✅ Embeddings saved to: {EMBED_OUTPUT}")
     return ids, np.vstack(embeddings)
 
 
@@ -84,12 +97,24 @@ def generate_protein_embeddings():
 def save_to_chroma(ids, vectors):
     print(f"🗄️ Saving embeddings to ChromaDB: {VECTORDB_PATH}")
 
+    # 🛠️ 중복 ID 완전 제거
+    if len(ids) != len(set(ids)):
+        print("⚠️ Fixing duplicate IDs before saving to ChromaDB...")
+        unique = {}
+        for i, pid in enumerate(ids):
+            if pid not in unique:
+                unique[pid] = vectors[i]
+
+        ids = list(unique.keys())
+        vectors = np.vstack(list(unique.values()))
+
+    # ChromaDB 클라이언트 초기화
     client = chromadb.PersistentClient(path=str(VECTORDB_PATH))
 
-    # 동일 이름 컬렉션 존재 시 삭제
+    # 기존 collection 삭제
     try:
         client.delete_collection("proteins")
-    except:
+    except Exception:
         pass
 
     collection = client.create_collection(
@@ -97,7 +122,6 @@ def save_to_chroma(ids, vectors):
         embedding_function=None
     )
 
-    # Chroma batch insert
     collection.add(
         ids=ids,
         embeddings=[v.tolist() for v in vectors],
@@ -130,16 +154,15 @@ def build_protein_similarity(top_k_per_protein=20, min_score=0.7):
     norms = np.linalg.norm(vectors, axis=1, keepdims=True)
     vectors_norm = vectors / norms
 
-    # 전체 similarity matrix (cosine)
+    # cosine similarity
     sim_matrix = np.dot(vectors_norm, vectors_norm.T)
 
     rows = []
     print("✨ Selecting top similar proteins...")
+
     for i, pid in enumerate(ids):
         sims = sim_matrix[i]
-
-        # 자기 자신 제외
-        sims[i] = -1
+        sims[i] = -1  # 자기 자신 제외
 
         top_idx = sims.argsort()[::-1][:top_k_per_protein]
 
@@ -171,6 +194,6 @@ def run_all():
     print("🎉 Protein embedding pipeline completed.")
 
 
-# main 실행용
 if __name__ == "__main__":
     run_all()
+

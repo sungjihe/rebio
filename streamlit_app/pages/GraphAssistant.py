@@ -1,5 +1,5 @@
 # streamlit_app/GraphAssistant.py
-
+import sys
 import os
 import json
 import requests
@@ -10,8 +10,12 @@ from dotenv import load_dotenv
 import streamlit.components.v1 as components
 
 from utils_3d import render_3d_structure, render_mutation_overlay
-from backend.utils.structure_loader import load_pdb_text
 
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+
+from backend.utils.structure_loader import load_pdb_text
 
 # ============================================================
 # 환경 설정

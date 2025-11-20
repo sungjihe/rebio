@@ -1,14 +1,9 @@
-# backend/config.py
 import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# ==========================================
-# 프로젝트 ROOT (rebio/)
-# ==========================================
 BASE_DIR = Path(__file__).resolve().parents[1]
 ENV_PATH = BASE_DIR / ".env"
-
 load_dotenv(ENV_PATH)
 
 
@@ -37,25 +32,17 @@ class Config:
     # 3) VectorDB (Chroma)
     # ======================================
     VECTORDB_ROOT = DATA_ROOT / "vectordb"
-
-    # Protein embeddings
     VECTORDB_PROTEIN = VECTORDB_ROOT / "protein"
-
-    # Therapeutic Protein embeddings
     VECTORDB_TP = VECTORDB_ROOT / "therapeutic_protein"
-
-    # Document / RAG embeddings
     VECTORDB_RAG = VECTORDB_ROOT / "rag"
 
     for p in [VECTORDB_ROOT, VECTORDB_PROTEIN, VECTORDB_TP, VECTORDB_RAG]:
         p.mkdir(parents=True, exist_ok=True)
 
     # ======================================
-    # 4) Local LLM (BioMistral / LoRA)
+    # 4) Local LLM
     # ======================================
     LLM_MODEL_PATH = Path(os.getenv("LLM_MODEL_PATH") or BASE_DIR / "models/rebio-lora")
-
-    # Vision Reasoner
     VISION_MODEL_PATH = Path(os.getenv("VISION_MODEL_PATH") or BASE_DIR / "models/blip2")
 
     # ======================================
@@ -63,7 +50,17 @@ class Config:
     # ======================================
     API_HOST = os.getenv("API_HOST", "0.0.0.0")
     API_PORT = int(os.getenv("API_PORT", "8000"))
-
     FASTAPI_URL = os.getenv("FASTAPI_URL", "http://localhost:8000")
+
+
+# ========================================================
+# Legacy module-level aliases (for backward compatibility)
+# ========================================================
+RAW_DATA_ROOT = Config.RAW_DATA_ROOT
+PROCESSED_DATA_ROOT = Config.PROCESSED_DATA_ROOT
+PDB_ROOT = Config.PDB_ROOT
+REDESIGNED_ROOT = Config.REDESIGNED_ROOT
+
+
 
 

@@ -2,10 +2,15 @@
 
 import json
 import logging
+import os
 from typing import Dict, Any
 
+from dotenv import load_dotenv
+from openai import OpenAI
+
 from backend.agentic.state import HeliconState
-from backend.agent.vision_reasoner import VisionReasoner
+
+load_dotenv()
 
 logger = logging.getLogger("EntityNode")
 logging.basicConfig(level=logging.INFO)
@@ -18,13 +23,19 @@ class EntityNode:
     - disease_id
     - protein_sequence
     - image_path
-
-    ❌ drugbank_id 제거됨
     """
 
+    # ---------------------------------------------------------
+    # 초기화: OpenAI Client 설정
+    # ---------------------------------------------------------
     def __init__(self):
-        # VisionReasoner(text-only도 지원)
-        self.llm = VisionReasoner()
+
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise RuntimeError("Missing OPENAI_API_KEY env variable")
+
+        # GPT-4o-mini 클라이언트
+        self.llm = OpenAI(api_key=api_key)
 
     # ---------------------------------------------------------
     # 실행
@@ -61,15 +72,24 @@ Return JSON:
 }}
 """
 
-        # LLM 호출
-        response = self.llm.reason(prompt)
-        raw = response["answer"]
+        # GPT-4o-mini 호출
+        res = self.llm.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "Extract biological entities and return ONLY valid JSON."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.1,
+            max_tokens=300
+        )
+
+        raw = res.choices[0].message.content.strip()
 
         # JSON decode
         try:
             data = json.loads(raw)
         except Exception:
-            logger.error("[EntityNode] JSON Parse Error. Using fallback.")
+            logger.error(f"[EntityNode] JSON Parse Error. Raw output: {raw}")
             data = {}
 
         # Default keys
@@ -88,7 +108,7 @@ Return JSON:
             if all(aa in valid_set for aa in seq_clean):
                 data["protein_sequence"] = seq_clean
             else:
-                logger.warning("[EntityNode] Invalid amino acids removed → sequence reset.")
+                logger.warning("[EntityNode] Invalid amino acids → resetting protein_sequence to null.")
                 data["protein_sequence"] = None
 
         # Save to state
@@ -97,4 +117,3 @@ Return JSON:
 
         logger.info(f"[EntityNode] Extracted entities: {data}")
         return state
-

@@ -10,7 +10,7 @@ def run():
     - 노드 + 관계 모두 포함
     """
     print("🧱 [STEP: graph] Neo4j 그래프 빌드 시작")
-    build_full_graph(data_root=Config.RAW_DATA_ROOT)
+    build_full_graph(node_root=Config.RAW_DATA_ROOT, relations_root=Config.RAW_DATA_ROOT)
     print("✅ [STEP: graph] 완료")
 
 
