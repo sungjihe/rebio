@@ -152,6 +152,8 @@ Return ONLY this JSON structure:
             })
 
         state.designed_protein = processed
+        # legacy alias (optional; mapped via HeliconState anyway)
+        state.design_result = processed
         state.log("design_node", {"variants": len(processed)})
 
         return state
