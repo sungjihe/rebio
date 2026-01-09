@@ -40,7 +40,7 @@ class VisionNode:
         image.save(buf, format="PNG")
         image_b64 = "data:image/png;base64," + b64encode(buf.getvalue()).decode()
 
-        question = state.entities.get("question", "Analyze this image.")
+        question = state.question or "Analyze this image."
         gpt4o_raw = self._analyze_with_gpt4o(image_b64, question)
 
         # ================================
