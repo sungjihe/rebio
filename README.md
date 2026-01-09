@@ -8,13 +8,25 @@
 ## Overview
 
 ReBio is an agentic AI framework for protein-centric drug discovery and biomedical reasoning.
-It is designed to move beyond prediction-only models by providing explicit, structured, and traceable biological evidence that supports each hypothesis.
+This work is motivated by a key limitation of prediction-centric artificial intelligence systems:
+despite high predictive performance, their reasoning processes are often opaque,
+and they lack the ability to explicitly detect and acknowledge failure.
 
-Rather than relying on end-to-end deep learning or free-form LLM reasoning, ReBio places a biological knowledge graph at the center of inference, constraining large language models to operate strictly within evidence-supported boundaries.
+Instead of relying on end-to-end deep learning or unconstrained large language model (LLM) reasoning,
+ReBio places a biological knowledge graph at the core of inference.
+All reasoning is performed over explicit, traceable evidence paths derived from the graph.
+LLMs are strictly constrained to interpret and synthesize graph-supported evidence,
+and are not permitted to autonomously generate hypotheses without underlying support.
 
-When automated reasoning is insufficient, the system explicitly defers to human-in-the-loop (HITL) intervention, preventing silent failure and hallucinated conclusions.
+When automated reasoning is insufficient or the density of available evidence fails to reach a defined threshold,
+ReBio detects this condition at the system level and requests human-in-the-loop (HITL) intervention.
+This design structurally prevents silent failure and hallucination-driven conclusions.
 
-ReBio is built on the Helicon multi-agent architecture, which decomposes scientific reasoning into modular, inspectable stages aligned with real-world research workflows.
+The overall reasoning process is implemented through the Helicon multi-agent architecture,
+which decomposes scientific inference into verifiable stages—including intent decomposition,
+evidence discovery, evidence integration, and mechanistic interpretation—
+thereby aligning AI-driven reasoning with real-world biomedical research workflows.
+
 
 ---
 
