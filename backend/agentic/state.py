@@ -50,6 +50,17 @@ class HeliconState:
     logs: List[Dict[str, Any]] = field(default_factory=list)
 
     # --------------------
+    # HITL / loop-guard
+    # --------------------
+    # Node attempt counters (e.g., {"graph": 2, "evidence": 1})
+    attempts: Dict[str, int] = field(default_factory=dict)
+
+    # When supervisor routes to "human", this payload tells the UI what to ask.
+    human_request: Optional[Dict[str, Any]] = None
+
+    # Optional: why execution halted (useful for debugging/telemetry)
+    halt_reason: Optional[str] = None
+    # --------------------
     # Logging helper
     # --------------------
     def log(self, node: str, payload: Dict[str, Any]) -> None:
@@ -59,6 +70,18 @@ class HeliconState:
             "payload": payload,
         })
 
+    # --------------------
+    # HITL helper
+    # --------------------
+    def bump_attempt(self, node: str) -> int:
+        """Increment attempt counter for a node and return the new value."""
+        self.attempts[node] = int(self.attempts.get(node, 0)) + 1
+        return self.attempts[node]
+
+    def reset_attempt(self, node: str) -> None:
+        """Reset attempt counter for a node when progress is made."""
+        if node in self.attempts:
+            self.attempts[node] = 0
     # =========================================================
     # Legacy aliases (do NOT store separate data, map to canonical)
     # =========================================================
