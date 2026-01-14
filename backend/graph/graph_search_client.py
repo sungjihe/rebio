@@ -57,7 +57,7 @@ class GraphSearchClient:
         return [(v - mu) / sd for v in values]
 
     # --------------------------
-    # node key serializer (요구 스펙 3-4)
+    # node key serializer 
     # --------------------------
     @staticmethod
     def node_key(n: Node) -> str:
@@ -93,7 +93,7 @@ class GraphSearchClient:
         return float(default)
 
     # ==========================
-    # 1) Similar Proteins (요구 스펙 3-2)
+    # 1) Similar Proteins 
     # ==========================
     def similar_proteins(self, uniprot_id: str, top_k: int = 20) -> List[Dict[str, Any]]:
         cypher = """
@@ -117,7 +117,7 @@ class GraphSearchClient:
         return rows
 
     # ==========================
-    # 2) Disease Prediction (요구 스펙 3-1)
+    # 2) Disease Prediction 
     # ==========================
     def predict_diseases(self, uniprot_id: str, top_k: int = 20) -> List[Dict[str, Any]]:
         cypher = """
@@ -157,7 +157,7 @@ class GraphSearchClient:
         return rows[:top_k]
 
     # ==========================
-    # 3) Recommend Therapeutics (요구 스펙 3-3)
+    # 3) Recommend Therapeutics 
     # ==========================
     def recommend_therapeutics(self, uniprot_id: str, top_k: int = 20) -> List[Dict[str, Any]]:
         # 스펙상 "직접: (tp)-[r:TARGETS]->(p)" 만 요구되어 있으므로
