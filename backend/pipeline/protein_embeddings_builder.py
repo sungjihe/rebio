@@ -1,4 +1,4 @@
-#backend/pipeline/protein_embeddings_builder.py
+# backend/pipeline/protein_embeddings_builder.py
 
 import os
 import json
@@ -146,12 +146,13 @@ def build_protein_similarity(top_k_per_protein=20, min_score=0.7):
         for line in f:
             obj = json.loads(line)
             ids.append(obj["id"])
-            vectors.append(np.array(obj["embedding"]))
+            vectors.append(np.array(obj["embedding"], dtype=np.float32))
 
     vectors = np.vstack(vectors)
 
-    # 정규화
+    # 정규화 (0 division 방지)
     norms = np.linalg.norm(vectors, axis=1, keepdims=True)
+    norms = np.where(norms == 0, 1e-9, norms)
     vectors_norm = vectors / norms
 
     # cosine similarity
@@ -161,24 +162,25 @@ def build_protein_similarity(top_k_per_protein=20, min_score=0.7):
     print("✨ Selecting top similar proteins...")
 
     for i, pid in enumerate(ids):
-        sims = sim_matrix[i]
+        sims = sim_matrix[i].copy()
         sims[i] = -1  # 자기 자신 제외
 
         top_idx = sims.argsort()[::-1][:top_k_per_protein]
 
         for j in top_idx:
-            score = sims[j]
+            score = float(sims[j])
             if score < min_score:
                 continue
 
+            # ✅ 헤더 통일: source_uniprot,target_uniprot,sim_score
             rows.append({
                 "source_uniprot": pid,
                 "target_uniprot": ids[j],
-                "similarity": float(score)
+                "sim_score": score
             })
 
-    df_sim = pd.DataFrame(rows)
-    df_sim.to_csv(SIM_OUTPUT, index=False)
+    df_sim = pd.DataFrame(rows, columns=["source_uniprot", "target_uniprot", "sim_score"])
+    df_sim.to_csv(SIM_OUTPUT, index=False, encoding="utf-8")
     print(f"✅ Protein similarity saved: {SIM_OUTPUT}")
 
     return df_sim
@@ -196,4 +198,5 @@ def run_all():
 
 if __name__ == "__main__":
     run_all()
+
 
