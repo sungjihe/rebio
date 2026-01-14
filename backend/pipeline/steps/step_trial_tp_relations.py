@@ -2,13 +2,12 @@
 
 import pandas as pd
 from backend.config import Config
-from pathlib import Path
 
 OUTPUT = Config.RAW_DATA_ROOT / "trial_therapeutic_relations.csv"
 
 def run():
     print("\n======================================")
-    print(" 🧬 STEP: trial_therapeutic_relations")
+    print(" 🧬 STEP: trial_tp_relations (Trial → TherapeuticProtein)")
     print("======================================")
 
     trials_path = Config.RAW_DATA_ROOT / "trials.csv"
@@ -21,24 +20,29 @@ def run():
     df_trials = pd.read_csv(trials_path)
     df_tp = pd.read_csv(tp_path)
 
+    # 필수 컬럼 체크
+    for c in ["nct_id", "therapeutic_name"]:
+        if c not in df_trials.columns:
+            raise ValueError(f"❌ trials.csv missing column: {c}")
+    for c in ["uniprot_id", "name"]:
+        if c not in df_tp.columns:
+            raise ValueError(f"❌ therapeutic_proteins.csv missing column: {c}")
+
     # 표준화
     df_trials["therapeutic_name"] = df_trials["therapeutic_name"].astype(str).str.upper()
     df_tp["name"] = df_tp["name"].astype(str).str.upper()
 
     relations = []
 
-    # 간단한 exact match (hybrid fuzzy match도 추가 가능)
+    # exact 포함 매칭: (trial therapeutic_name) 이 (tp name) 에 포함되는지
     for _, t in df_trials.iterrows():
         therapy = t["therapeutic_name"]
         nct_id = t["nct_id"]
 
-        # therapy 이름이 TP 이름에 포함되면 match
         matches = df_tp[df_tp["name"].str.contains(therapy, na=False)]
-
         for _, tp in matches.iterrows():
             relations.append({
                 "nct_id": nct_id,
-                "therapeutic_name": therapy,
                 "tp_uniprot": tp["uniprot_id"]
             })
 
@@ -46,8 +50,9 @@ def run():
         print("⚠️ No Trial → TherapeuticProtein matches found")
         return
 
-    df_out = pd.DataFrame(relations)
-    df_out.to_csv(OUTPUT, index=False)
+    df_out = pd.DataFrame(relations, columns=["nct_id", "tp_uniprot"])
+    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+    df_out.to_csv(OUTPUT, index=False, encoding="utf-8")
 
     print(f"✅ Saved: {OUTPUT}")
 
