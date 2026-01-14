@@ -79,19 +79,25 @@ class RelationLoader:
     # --------------------------------------------------------------
     # 2) Protein similarity (SIMILAR_TO)
     # --------------------------------------------------------------
+   
     def load_protein_similarity(self, path: str):
         rows = read_csv_dicts(path)
 
         cypher = """
         UNWIND $rows AS row
-        MATCH (a:Protein {uniprot_id: row.source_uniprot})
-        MATCH (b:Protein {uniprot_id: row.target_uniprot})
+        WITH
+          coalesce(row.source_uniprot, row.src_uniprot_id) AS src,
+          coalesce(row.target_uniprot, row.tgt_uniprot_id) AS tgt,
+          toFloat(coalesce(row.sim_score, row.similarity)) AS score
+        MATCH (a:Protein {uniprot_id: src})
+        MATCH (b:Protein {uniprot_id: tgt})
         MERGE (a)-[r:SIMILAR_TO]->(b)
-        SET r.similarity = toFloat(row.similarity)
+        SET r.sim_score = score
         """
 
         self._load_generic(cypher, rows)
         self.log.info(f"[RelationLoader] Loaded SIMILAR_TO from {path}")
+
 
     # --------------------------------------------------------------
     # 3) TP TARGETS Protein
@@ -104,6 +110,7 @@ class RelationLoader:
         MATCH (tp:TherapeuticProtein {uniprot_id: row.tp_uniprot})
         MATCH (p:Protein {uniprot_id: row.protein_uniprot})
         MERGE (tp)-[:TARGETS]->(p)
+        SET r.evidence_score = toFloat(coalesce(row.evidence_score, 1.0))
         """
 
         self._load_generic(cypher, rows)
@@ -112,18 +119,19 @@ class RelationLoader:
     # --------------------------------------------------------------
     # 4) Trial → Protein
     # --------------------------------------------------------------
-    def load_trial_protein_relations(self, path: str):
+   def load_trial_protein_relations(self, path: str):
         rows = read_csv_dicts(path)
 
         cypher = """
         UNWIND $rows AS row
-        MATCH (t:Trial {trial_id: row.trial_id})
+        MATCH (t:Trial {nct_id: row.nct_id})
         MATCH (p:Protein {uniprot_id: row.uniprot_id})
         MERGE (t)-[:INVESTIGATES]->(p)
         """
 
         self._load_generic(cypher, rows)
         self.log.info(f"[RelationLoader] Loaded Trial→Protein from {path}")
+
 
     # --------------------------------------------------------------
     # 5) Trial → TherapeuticProtein
@@ -133,13 +141,14 @@ class RelationLoader:
 
         cypher = """
         UNWIND $rows AS row
-        MATCH (t:Trial {trial_id: row.trial_id})
-        MATCH (tp:TherapeuticProtein {uniprot_id: row.uniprot_id})
-        MERGE (t)-[:USES]->(tp)
+        MATCH (t:Trial {nct_id: row.nct_id})
+        MATCH (tp:TherapeuticProtein {uniprot_id: row.tp_uniprot})
+        MERGE (t)-[:INVOLVES_TP]->(tp)
         """
 
         self._load_generic(cypher, rows)
         self.log.info(f"[RelationLoader] Loaded Trial→TherapeuticProtein from {path}")
+
 
     # --------------------------------------------------------------
     # 6) Publication → Protein
