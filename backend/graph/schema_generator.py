@@ -69,9 +69,10 @@ class Neo4jSchemaGenerator:
             "CREATE INDEX IF NOT EXISTS FOR ()-[r:ASSOCIATED_WITH]-() ON (r.score);",
 
             # TherapeuticProtein → Protein 관계들
-            "CREATE INDEX IF NOT EXISTS FOR ()-[r:TARGETS]-() ON (r.strength);",
-            "CREATE INDEX IF NOT EXISTS FOR ()-[r:BINDS_TO]-() ON (r.affinity);",
-            "CREATE INDEX IF NOT EXISTS FOR ()-[r:MODULATES]-() ON (r.effect_strength);",
+            CREATE INDEX IF NOT EXISTS FOR ()-[r:TARGETS]-() ON (r.evidence_score);
+            CREATE INDEX IF NOT EXISTS FOR ()-[r:BINDS_TO]-() ON (r.evidence_score);
+            CREATE INDEX IF NOT EXISTS FOR ()-[r:MODULATES]-() ON (r.evidence_score);
+
 
             # Publication mentions confidence
             "CREATE INDEX IF NOT EXISTS FOR ()-[r:MENTIONS]-() ON (r.confidence);",
