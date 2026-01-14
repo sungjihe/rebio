@@ -22,12 +22,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Routers
-app.include_router(rebio_router, prefix="/rebio")
-app.include_router(protein_router, prefix="/protein")
+# ✅ prefix는 routes_*에서만 관리
+app.include_router(rebio_router)
+app.include_router(protein_router)
 
 
 @app.get("/")
 def root():
-    return {"status": "ok", "message": "ReBio API backend running."}
-
+    return {
+        "status": "ok",
+        "message": "ReBio API backend running."
+    }
