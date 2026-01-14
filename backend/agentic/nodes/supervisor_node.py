@@ -134,7 +134,7 @@
              return "structure"
  
          # 9) Render 3D
-         if state.structure_result and state.structure_image is None:
+         if state.structure_result and not state.structure_render_done:
              return "render"
  
          # 10) Reasoning aggregation
