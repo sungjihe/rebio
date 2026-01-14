@@ -46,13 +46,13 @@ class CrawlerNode:
 
         # Wikipedia
         try:
-            enriched["wiki"] = fetch_wiki_summary(question)
+            enriched["wiki"] = fetch_wiki_summary(state.entities.get("disease_name"))
         except Exception as e:
             logger.warning(f"[CrawlerNode] Wikipedia error: {e}")
 
         # UniProt
         try:
-            enriched["uniprot"] = fetch_uniprot_summary(question)
+            enriched["uniprot"] = fetch_uniprot_summary(state.entities.get("uniprot_id"))
         except Exception as e:
             logger.warning(f"[CrawlerNode] UniProt error: {e}")
 
@@ -64,7 +64,7 @@ class CrawlerNode:
 
         # ClinicalTrials.gov
         try:
-            enriched["clinical_trials"] = fetch_clinical_trials(question, max_results=5)
+            enriched["clinical_trials"] = fetch_clinical_trials(state.entities.get("therapeutic_name"))
         except Exception as e:
             logger.warning(f"[CrawlerNode] ClinicalTrials error: {e}")
 
